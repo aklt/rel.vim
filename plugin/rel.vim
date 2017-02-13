@@ -69,6 +69,9 @@ fun! s:OpenFileOrManAndGoto(filename, goto)
     endif
     let page = strcharpart(a:filename, 4)
     exe ':Man ' . page
+  elseif a:filename =~ '^vim:'
+    let page = strcharpart(a:filename, 4)
+    exe ':help ' . page
   else
     exe g:rel_open . ' ' . a:filename
   endif

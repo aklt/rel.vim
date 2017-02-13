@@ -1,11 +1,12 @@
 *rel.txt*         Define and follow links to resources with
-                _____  _____  ____     __ __  ___  __  __  ~
-               /  _  \/   __\/  _/    /  |  \/___\/  \/  \ ~
-               |  _  <|   __||  |--- _\  |  /|   ||  \/  | ~
-               \__|\_/\_____/\_____/<_>\___/ \___/\__ \__/ ~
-                                 Resource Linking for Vim  ~
+==============================================================================
+                _____  _____  ____     __ __  ___  __  __                    ~
+               /  _  \/   __\/  _/    /  |  \/___\/  \/  \                   ~
+               |  _  <|   __||  |--- _\  |  /|   ||  \/  |                   ~
+               \__|\_/\_____/\_____/<_>\___/ \___/\__/\__/                   ~
+                                 Resource Linking for Vim                    ~
 
-=============================================================================
+==============================================================================
 USAGE                                                           *rel-usage* *rel*
 
 Press `<C-k>` to follow the link under the cursor.  If the link begins with a
@@ -42,18 +43,27 @@ SCHEMES                                                         *rel-schemes*
 The vanilla version of `rel.vim` defines actions for 2 schemes.  See
 |rel-config| on how to define your own.
 
-http: ~
+vim: ~
 
-If a `http://` or `https://` URL is encountered rel will execute the command
-in `g:rel_http` passing the url to open it.
+This scheme refers to a location in a vim help file, ie. >
+
+        vim:rel.txt#/^This%20scheme
+<
+shold refer to this sentence.
 
 man: ~
 
 The `man:` scheme will cause `rel.vim` to open a man page using the `:Man`
-command.  It will complain if there is no such command.
+command.  It will complain if there is no such command. >
 
-As with files the `#/` and `#:` fragments can be used to jump to a specific
-position in the manpage.
+         man:vim#/^ON-LINE
+<
+should open the vim man page.
+
+http: ~
+
+If a `http://` or `https://` URL is encountered rel will execute the command
+in |g:rel_http| passing the url to open it.
 
 MAPPING                                                         *rel-mapping*
 
