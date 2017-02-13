@@ -88,7 +88,7 @@ fun! s:OpenFileOrManAndGoto(filename, goto)
 endfun
 
 fun! s:OpenHttp(a)
-  call s:RunJob('chromium --force-device-scale-factor=1 %s', a:a[1])
+  call s:RunJob(g:rel_http, a:a[1])
   return 1
 endfun
 
