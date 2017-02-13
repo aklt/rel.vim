@@ -1,76 +1,75 @@
-" Rel
-"
-" Author: Anders Thøgersen
-"
-" Route your text linking.  This is sort of a revamp of UTL.vim
-"
-" Better mnemonics:
-"
-"   : line number
-"   / token match  space is %20 in this
-"
+"============================================================================
+" File:        rel.vim
+" Description: Vim plugin to handle links to ressources
+" Author:      Anders Thøgersen <anders [at] bladre.dk>
+" License:     This program is free software. It comes without any warranty,
+"============================================================================
 " TODO define paths/protocols in a dictionary, ie. wiki:Notes
-" TODO make it possible to pass data to external progs, ie. gnuplot
-" TODO define a function to mark locations to a different buffer, so we can
-"      explore and mark on our way around some files
-"
-" if exists('g:rel_version')
-"     finish
-" endif
-let g:rel_version = '0.0.1'
-if v:version < 800
-  echomsg 'rel.vim: need vim version 8'
-  finish
+" TODO make it possible to pass data to external progs
+if exists('g:rel_version')
+    finish
 endif
+let g:rel_version = '0.1.0'
 let s:keepcpo = &cpo
 set cpo&vim
 
-fun! ReplaceTilde(path)
+if ! exists('g:rel_open')
+  let g:rel_open = 'tabnew'
+endif
+
+if ! exists('g:rel_http')
+  let g:rel_http = 'lynx'
+endif
+
+if ! exists('g:rel_extmap')
+  let g:rel_extmap = {'jpg': 'gimp %s'}
+endif
+
+fun! s:NormalizePath(path)
   let res = substitute(a:path, '^\~', $HOME, "e")
+  let res = substitute(res, '%20', ' ', 'g')
   return res
 endfun
 
-fun! RunJob(cmd, arg)
-  call job_start(a:cmd . ' ' . a:arg, {
+fun! s:RunJob(cmd, arg)
+  let job = substitute(a:cmd, '%s', a:arg, 'g')
+  if ! has('job')
+    return system(job)
+  endif
+  call job_start(job, {
         \ "err_io": "null",
         \ "in_io": "null",
         \ "out_io": "null"
         \ })
 endfun
 
-" Jump to a file with vim at a line number or matching text
-"
-" file://foo#/bar
-" foo#/bar
-" foo#:12
-
-" https://i.imgur.com/TLTwmJo.gifv
-" ~/freshen.vym
-" /usr/share/icons/hicolor/22x22/mimetypes/application-x-vnd.kde.kplato.work.png
-" man:at#//var/spool/atd
-" http://dr.dk
-fun! OpenFileOrManAndGotoX(a)
-  if len(a:a[1]) > 0
+fun! s:GetRelPartsAndOpenFileOrMan(a)
+  let len = len(a:a[1])
+  if len > 0
     let idx = stridx(a:a[1], '#')
+    let hash = ''
+    if idx >= 0
+      let hash = strcharpart(a:a[1], idx + 1)
+    else
+      let idx = len
+    endif
     let path = strcharpart(a:a[1], 0, idx)
-    let hash = strcharpart(a:a[1], idx + 1)
-    return OpenFileOrManAndGoto(ReplaceTilde(path), hash)
+    return s:OpenFileOrManAndGoto(s:NormalizePath(path), hash)
   endif
 endfun
 
 let s:esc = '\\/*{}[].-'
 
-fun! OpenFileOrManAndGoto(filename, goto)
+fun! s:OpenFileOrManAndGoto(filename, goto)
   if a:filename =~ '^man:'
     if ! exists(":Man")
       echoerr 'please enable :Man command with "runtime ftplugin/man.vim"'
       return
     endif
     let page = strcharpart(a:filename, 4)
-    let page = substitute(page, '%20', ' ', 'g')
     exe ':Man ' . page
   else
-    exe 'tabnew ' . a:filename
+    exe g:rel_open . ' ' . a:filename
   endif
   if a:goto[0] == ':'
     return cursor(str2nr(strcharpart(a:goto, 1)), 0)
@@ -84,23 +83,29 @@ fun! OpenFileOrManAndGoto(filename, goto)
   return 'foo'
 endfun
 
-fun! OpenHttp(a)
-  call RunJob('chromium --force-device-scale-factor=1', a:a[1])
+fun! s:OpenHttp(a)
+  call s:RunJob('chromium --force-device-scale-factor=1 %s', a:a[1])
   return 1
 endfun
 
-fun! OpenFileExt(a)
-  call RunJob('vym', ReplaceTilde(a:a[1]))
-  return 1
+fun! s:OpenFileExt(a)
+  let rel = a:a[1]
+  let ext = tolower(a:a[2])
+  if len(ext) == 0 || ! has_key(g:rel_extmap, ext)
+    return 0
+  endif
+  let job = g:rel_extmap[ext]
+  return s:RunJob(job, s:NormalizePath(a:a[1]))
 endfun
 
-let g:rel_handlers = [
-      \ [ '^\(https\?:\/\/\S\+\)', funcref('OpenHttp') ],
-      \ [ '^\(\S\+\.\w\{1,4}\)$', funcref('OpenFileExt') ],
-      \ [ '^\%(file:\/\/\)\?\(\S\+\)\%(#\(\/\w\+\|:\d\+\)\)\?',  funcref('OpenFileOrManAndGotoX')]
+let s:rel_handlers = [
+      \ [ '^\(https\?:\/\/\S\+\)', funcref('s:OpenHttp') ],
+      \ [ '^\(\S\+\.\(\w\+\)\)$', funcref('s:OpenFileExt') ],
+      \ [ '^\%(file:\/\/\)\?\(\S\+\)\%(#\(\/\w\+\|:\d\+\)\)\?',
+      \   funcref('s:GetRelPartsAndOpenFileOrMan')]
       \ ]
 
-fun! TokenAtCursor(line, pos)
+fun! s:TokenAtCursor(line, pos)
   if strcharpart(a:line, a:pos, 1) =~ '\s'
     echomsg 'no token under cursor'
     return ''
@@ -142,8 +147,8 @@ endfun
 fun! s:Rel()
   let pos = getcurpos()
   let line = getline('.')
-  let token = TokenAtCursor(line, pos[2])
-  for hdl in g:rel_handlers
+  let token = s:TokenAtCursor(line, pos[2])
+  for hdl in s:rel_handlers
     let token2 = substitute(token, hdl[0], hdl[1], 'ie')
     if token2 != token
       return
@@ -151,7 +156,11 @@ fun! s:Rel()
   endfor
 endfun
 
-nmap <C-u> :call <SID>Rel()<CR>
+if ! hasmapto('<Plug>(Rel)')
+  nmap <unique> <C-k> <Plug>(Rel)
+endif
+
+nnoremap <Plug>(Rel) :call <SID>Rel()<CR>
 
 let &cpo= s:keepcpo
 unlet s:keepcpo
