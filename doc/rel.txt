@@ -1,0 +1,107 @@
+*rel.txt*         Define and follow links to resources with
+*rel*
+                _____  _____  ____     __ __  ___  __  __  ~
+               /  _  \/   __\/  _/    /  |  \/___\/  \/  \ ~
+               |  _  <|   __||  |--- _\  |  /|   ||  \/  | ~
+               \__|\_/\_____/\_____/<_>\___/ \___/\__ \__/ ~
+                                 Resource Linking for Vim  ~
+
+=============================================================================
+INTRODUCTION                                                    *rel-intro*
+
+With rel.vim you can create links to files and URLs and define schemes to
+determine how to open links.
+
+USAGE                                                           *rel-usage*
+
+Pressing `<C-u>` will follow the link under the cursor.  If the link begins
+with a `scheme:` it will be resolved to determine the program to execute to
+open the link.  A may also contain a fragment that determines the cursor
+location in the newly opened file.
+                                                                *rel-rels*
+RELs ~
+
+The links that `rel.vim` uses consist of only non-whitespace characters.  Any
+sequence of non-whitespace characters under the cursor will be passed along
+and interpreted as a link.
+
+To include a space character in a link you can use `%20`.
+
+If the tilde `~`  character appears at the beginning of the link it is
+expanded to the value of `$HOME`.
+
+Some examples of links: >
+
+        ~/.vimrc
+        man:vim
+        http://www.vim.org
+<
+FRAGMENTS                                                       *rel-fragments*
+
+Rel links to local files that are opened in a vim buffer may be suffixed with
+a fragment part that determines the cursor position in the newly opened
+buffer.
+
+A Line fragment (`#:<number>`) jumps places the cursor at a specific line and
+a search fragment (`#/<text>`) finds a text to place the cursor over.
+
+Here is a link to files with a line and a text fragment: >
+
+        ~/.vimrc#:10
+        ~/.vimrc#/set
+>
+SCHEMES                                                         *rel-schemes*
+
+The vanilla version of `rel.vim` defines actions for 2 schemes:
+
+http: ~
+
+If a `http://` or `https://` URL is encountered rel will execute the command
+in  `g:rel_http`  passing the url to open it.
+
+man: ~
+
+The `man:` scheme will cause `rel.vim` to open a man page using the `:Man`
+command.  It will complain if there is no such command.
+
+As with files the `#/` and `#:` fragments can be used to jump to a specific
+position in the manpage.
+
+COMMANDS                                                        *rel-commands*
+
+The command
+
+    :Rel
+
+follows the link under the cursor and prints steps taken to follow the link.
+
+MAPPING                                                         *rel-mapping*
+
+You can map a key combination of your liking to <Plug>Rel to create a
+shortcut for following a link.  If no map exists the default is: >
+
+        :nnoremap <C-u> <Plug>Rel
+>
+CONFIGURATION                                                   *rel-config*
+
+                                                                *g:rel_http*
+Change the program to run when opening an `http` or `https` URL: >
+
+        let g:rel_http = 'lynx'
+
+The
+
+ABOUT                                                           *rel-about*
+
+The inspiration for this script came from UTL.vim, which has similar goals.
+See http://www.vim.org/scripts/script.php?script_id=293
+
+The latest version of `rel.vim` is available on GitHub:
+
+    http://github.com/aklt/rel.vim
+
+Released under the same terms as vim, see |license|
+
+Vim version 8 or above is required.
+
+vim:tw=78:et:ft=help:norl:
