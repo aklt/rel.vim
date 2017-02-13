@@ -56,6 +56,7 @@ fun! s:GetRelPartsAndOpenFileOrMan(a)
     let path = strcharpart(a:a[1], 0, idx)
     return s:OpenFileOrManAndGoto(s:NormalizePath(path), hash)
   endif
+  return a:a[1]
 endfun
 
 let s:esc = '\\/*{}[].-'
@@ -92,7 +93,7 @@ fun! s:OpenFileExt(a)
   let rel = a:a[1]
   let ext = tolower(a:a[2])
   if len(ext) == 0 || ! has_key(g:rel_extmap, ext)
-    return 0
+    return a:a[1]
   endif
   let job = g:rel_extmap[ext]
   return s:RunJob(job, s:NormalizePath(a:a[1]))
