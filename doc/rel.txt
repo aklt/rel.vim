@@ -111,7 +111,7 @@ see http://www.vim.org/scripts/script.php?script_id=293
 
 The latest version of `rel.vim` is available on GitHub:
 
-    http://github.com/aklt/rel.vim
+    http://github.com/aklt/vim-rel
 
 Released under the same terms as vim, see |license|
 
