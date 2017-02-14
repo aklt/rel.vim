@@ -65,11 +65,11 @@ fun! s:OpenFileOrManAndGoto(a)
       else
         exe g:rel_modifiers . ' help ' . page
       endif
-	elseif g:rel_open =~ 'tab'
-	  exe g:rel_open . ' ' . filename
-	else
-	  exe g:rel_modifiers . ' ' . g:rel_open . ' ' . filename
-	endif
+    elseif g:rel_open =~ 'tab'
+      exe g:rel_open . ' ' . filename
+    else
+      exe g:rel_modifiers . ' ' . g:rel_open . ' ' . filename
+    endif
     if goto
       if goto[0] == ':'
         return cursor(str2nr(strcharpart(goto, 1)), 0)
