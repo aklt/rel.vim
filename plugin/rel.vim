@@ -1,13 +1,11 @@
 "============================================================================
 " File:        rel.vim
-" Description: Vim plugin to handle links to ressources
+" Description: Vim plugin to handle links to resources
 " Author:      Anders Thøgersen <anders [at] bladre.dk>
 " License:     This program is free software. It comes without any warranty,
 "============================================================================
-" TODO define paths/protocols in a dictionary, ie. wiki:Notes
-" TODO make it possible to pass data to external progs
 if exists('g:rel_version')
-    finish
+  finish
 endif
 let g:rel_version = '0.1.1'
 let s:keepcpo = &cpo
@@ -43,48 +41,37 @@ fun! s:RunJob(cmd, arg)
         \ })
 endfun
 
-fun! s:GetRelPartsAndOpenFileOrMan(a)
-  let len = len(a:a[1])
-  if len > 0
-    let idx = stridx(a:a[1], '#')
-    let hash = ''
-    if idx >= 0
-      let hash = strcharpart(a:a[1], idx + 1)
+let s:esc = '\\/*{}[]."-'
+
+fun! s:OpenFileOrManAndGoto(a)
+  let filename = s:NormalizePath(a:a[1])
+  let goto = a:a[2]
+  if len(filename) > 0
+    if filename =~ '^man:'
+      if ! exists(":Man")
+        echoerr 'please enable :Man command with "runtime ftplugin/man.vim"'
+        return
+      endif
+      let page = strcharpart(filename, 4)
+      exe ':Man ' . page
+    elseif filename =~ '^vim:'
+      let page = strcharpart(filename, 4)
+      exe ':help ' . page
     else
-      let idx = len
+      exe g:rel_open . ' ' . filename
     endif
-    let path = strcharpart(a:a[1], 0, idx)
-    return s:OpenFileOrManAndGoto(s:NormalizePath(path), hash)
-  endif
-  return a:a[1]
-endfun
-
-let s:esc = '\\/*{}[].-'
-
-fun! s:OpenFileOrManAndGoto(filename, goto)
-  if a:filename =~ '^man:'
-    if ! exists(":Man")
-      echoerr 'please enable :Man command with "runtime ftplugin/man.vim"'
-      return
+    if goto[0] == ':'
+      return cursor(str2nr(strcharpart(goto, 1)), 0)
     endif
-    let page = strcharpart(a:filename, 4)
-    exe ':Man ' . page
-  elseif a:filename =~ '^vim:'
-    let page = strcharpart(a:filename, 4)
-    exe ':help ' . page
-  else
-    exe g:rel_open . ' ' . a:filename
+    let needle = strcharpart(goto, 1)
+    if goto[0] != '/'
+      let needle = goto
+    endif
+    let needle = substitute(needle, '%20', ' ', 'g')
+    exe ':call search("' . escape(needle, s:esc) . '")'
+    return 1
   endif
-  if a:goto[0] == ':'
-    return cursor(str2nr(strcharpart(a:goto, 1)), 0)
-  endif
-  let needle = strcharpart(a:goto, 1)
-  if a:goto[0] != '/'
-    let needle = a:goto
-  endif
-  let needle = substitute(needle, '%20', ' ', 'g')
-  exe ':call search("' . escape(needle, s:esc) . '")'
-  return 'foo'
+  return a:a[0]
 endfun
 
 fun! s:OpenHttp(a)
@@ -96,23 +83,46 @@ fun! s:OpenFileExt(a)
   let rel = a:a[1]
   let ext = tolower(a:a[2])
   if len(ext) == 0 || ! has_key(g:rel_extmap, ext)
-    return a:a[1]
+    return a:a[0]
   endif
   let job = g:rel_extmap[ext]
   return s:RunJob(job, s:NormalizePath(a:a[1]))
 endfun
 
+fun! s:OpenResolvedScheme(a)
+  if exists('g:rel_schemes') && has_key(g:rel_schemes, a:a[1])
+    let Resolved = g:rel_schemes[a:a[1]]
+    if type(Resolved) == type('')
+      " Assume we get a url
+      if len(a:a[2]) > 0
+        let Resolved .= '/' . a:a[2]
+      endif
+      if len(a:a[3]) > 0
+        let Resolved .= '#' . a:a[3]
+      endif
+      return s:RelResolve(resolved)
+    elseif type(Resolved) == type(funcref('s:OpenHttp'))
+      let res = call(Resolved, [a:a[2], a:a[3]])
+      if len(res) > 0
+        return s:RelResolve(res)
+      endif
+    endif
+  endif
+  return a:a[0]
+endfun
+
 let s:rel_handlers = [
       \ [ '^\(https\?:\/\/\S\+\)', funcref('s:OpenHttp') ],
+      \ [ '^\~\(\w\+\):\([^#]\+\)\%(#\(\/\S\+\|:\d\+\)\)\?',
+      \   funcref('s:OpenResolvedScheme')],
       \ [ '^\(\S\+\.\(\w\+\)\)$', funcref('s:OpenFileExt') ],
-      \ [ '^\%(file:\/\/\)\?\(\S\+\)\%(#\(\/\w\+\|:\d\+\)\)\?',
-      \   funcref('s:GetRelPartsAndOpenFileOrMan')]
+      \ [ '^\%(file:\/\/\)\?\([^#]\+\)\%(#\(\/\S\+\|:\d\+\)\)\?',
+      \   funcref('s:OpenFileOrManAndGoto')]
       \ ]
 
 fun! s:TokenAtCursor(line, pos)
   if strcharpart(a:line, a:pos, 1) =~ '\s'
-    echomsg 'no token under cursor'
-    return ''
+    return echomsg 'rel.vim: no token under cursor'
   endif
   let len = strchars(a:line)
   let i = a:pos
@@ -148,16 +158,30 @@ fun! s:TokenAtCursor(line, pos)
   return res
 endfun
 
+let s:RelResolveMaxIter = 5
+
+fun! s:RelResolve(token)
+  if s:RelResolveMaxIter == 0
+    echomsg 'rel.vim: recursed too deeply while resolving'
+    return
+  endif
+  for hdl in s:rel_handlers
+    let token2 = substitute(a:token, hdl[0], hdl[1], 'ie')
+    if token2 != a:token
+      return
+    endif
+  endfor
+  let s:RelResolveMaxIter = s:RelResolveMaxIter - 1
+endfun
+
 fun! s:Rel()
   let pos = getcurpos()
   let line = getline('.')
   let token = s:TokenAtCursor(line, pos[2])
-  for hdl in s:rel_handlers
-    let token2 = substitute(token, hdl[0], hdl[1], 'ie')
-    if token2 != token
-      return
-    endif
-  endfor
+  if len(token) > 0
+    let s:RelResolveMaxIter = 5
+    call s:RelResolve(token)
+  endif
 endfun
 
 if ! hasmapto('<Plug>(Rel)')
