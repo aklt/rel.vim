@@ -68,7 +68,9 @@ fun! s:OpenFileOrManAndGoto(a)
       let needle = goto
     endif
     let needle = substitute(needle, '%20', ' ', 'g')
-    exe ':call search("' . escape(needle, s:esc) . '")'
+    let s = escape(needle, s:esc)
+    call cursor(1, 1)
+    call search(s)
     return 1
   endif
   return a:a[0]
@@ -100,10 +102,14 @@ fun! s:OpenResolvedScheme(a)
       if len(a:a[3]) > 0
         let Resolved .= '#' . a:a[3]
       endif
-      return s:RelResolve(resolved)
+      return s:RelResolve(Resolved)
     elseif type(Resolved) == type(funcref('s:OpenHttp'))
       let res = call(Resolved, [a:a[2], a:a[3]])
-      if len(res) > 0
+      if res == 0
+        return 0
+      elseif res == 1
+        return s:RelResolve(a:a[0])
+      elseif len(res) > 0
         return s:RelResolve(res)
       endif
     endif
@@ -122,7 +128,7 @@ let s:rel_handlers = [
 
 fun! s:TokenAtCursor(line, pos)
   if strcharpart(a:line, a:pos, 1) =~ '\s'
-    return echomsg 'rel.vim: no token under cursor'
+    return echomsg 'no token under cursor'
   endif
   let len = strchars(a:line)
   let i = a:pos
@@ -161,7 +167,7 @@ endfun
 let s:RelResolveMaxIter = 5
 
 fun! s:RelResolve(token)
-  if s:RelResolveMaxIter == 0
+  if s:RelResolveMaxIter <= 0
     echomsg 'rel.vim: recursed too deeply while resolving'
     return
   endif
