@@ -15,8 +15,12 @@ if ! exists('g:rel_open')
   let g:rel_open = 'tabnew'
 endif
 
+if ! exists('g:rel_modifiers')
+  let g:rel_modifiers = 'vert'
+endif
+
 if ! exists('g:rel_http')
-  let g:rel_http = 'lynx'
+  let g:rel_http = 'firefox'
 endif
 
 if ! exists('g:rel_extmap')
@@ -56,21 +60,29 @@ fun! s:OpenFileOrManAndGoto(a)
       exe ':Man ' . page
     elseif filename =~ '^vim:'
       let page = strcharpart(filename, 4)
-      exe ':help ' . page
-    else
-      exe g:rel_open . ' ' . filename
+      if g:rel_open =~ 'tab'
+        exe ':tab help ' . page
+      else
+        exe g:rel_modifiers . ' help ' . page
+      endif
+	elseif g:rel_open =~ 'tab'
+	  exe g:rel_open . ' ' . filename
+	else
+	  exe g:rel_modifiers . ' ' . g:rel_open . ' ' . filename
+	endif
+    if goto
+      if goto[0] == ':'
+        return cursor(str2nr(strcharpart(goto, 1)), 0)
+      endif
+      let needle = strcharpart(goto, 1)
+      if goto[0] != '/'
+        let needle = goto
+      endif
+      let needle = substitute(needle, '%20', ' ', 'g')
+      let s = escape(needle, s:esc)
+      call cursor(1, 1)
+      call search(s)
     endif
-    if goto[0] == ':'
-      return cursor(str2nr(strcharpart(goto, 1)), 0)
-    endif
-    let needle = strcharpart(goto, 1)
-    if goto[0] != '/'
-      let needle = goto
-    endif
-    let needle = substitute(needle, '%20', ' ', 'g')
-    let s = escape(needle, s:esc)
-    call cursor(1, 1)
-    call search(s)
     return 1
   endif
   return a:a[0]
