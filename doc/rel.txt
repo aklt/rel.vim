@@ -5,7 +5,7 @@
                |  _  <|   __||  |--- _\  |  /|   ||  \/  |                   ~
                \__|\_/\_____/\_____/<_>\___/ \___/\__/\__/                   ~
                                  Resource Linking for Vim                    ~
-
+                                                                             ~
 ==============================================================================
 USAGE                                                           *rel-usage* *rel*
 
@@ -13,7 +13,7 @@ Press `<C-k>` to follow the link under the cursor.  If the link begins with a
 `scheme:` it will be resolved to determine the program to execute to open the
 link.  A link may also contain a fragment that determines the cursor location
 in the newly opened file.
-                                                                *rel-rels*
+                                                                     *rel-rels*
 RELs ~
 
 The links that `rel.vim` uses consist of only non-whitespace characters.  Any
@@ -38,7 +38,7 @@ Here is a link to files with a line and a text fragment: >
         ~/.vimrc#:10
         ~/.vimrc#/set
 >
-SCHEMES                                                         *rel-schemes*
+SCHEMES                                                           *rel-schemes*
 
 The vanilla version of `rel.vim` defines actions for 2 schemes.  See
 |rel-config| on how to define your own.
@@ -65,17 +65,17 @@ http: ~
 If a `http://` or `https://` URL is encountered rel will execute the command
 in |g:rel_http| passing the url to open it.
 
-MAPPING                                                         *rel-mapping*
+MAPPING                                                           *rel-mapping*
 
 You can map a key combination of your liking to `<Plug>(Rel)` to create a
 shortcut for following a link.  If no map exists the default is: >
 
         :nmap <C-k> <Plug>(Rel)
 <
-CONFIGURATION                                                   *rel-config*
+CONFIGURATION                                                      *rel-config*
 
 Http browser ~
-                                                                *g:rel_http*
+                                                                   *g:rel_http*
 
 Change the program to run when opening an `http` or `https` URL: >
 
@@ -84,7 +84,7 @@ Change the program to run when opening an `http` or `https` URL: >
 The string `%s` will be replaced with the link.
 
 Opening a buffer ~
-                                                                *g:rel_open*
+                                                                   *g:rel_open*
 
 Change `g:rel_open` to determine how a buffer should be opened when
 following a link: >
@@ -93,9 +93,13 @@ following a link: >
 >
 Set this to one of the vim commands used to open a file: |:tabnew|, |:vsplit|,
 |:split|.
+                                                              *g:rel_modifiers*
+
+The value of `g:rel_modifiers` determines how to open a buffer when
+`g:rel_open` is not |:tabnew|.  See vim::vert
 
 External programs ~
-                                                                *g:rel_extmap*
+                                                                 *g:rel_extmap*
 
 You can define a dictionary of extensions mapping to programs to determine how
 to open a link by its extension: >
@@ -114,7 +118,7 @@ Not implemented yet.
 The variable `g:rel_schemes` may contain a mapping between a regular
 expression to match a link and a function to run if the regex matches.
 
-ABOUT                                                           *rel-about*
+ABOUT                                                               *rel-about*
 
 The inspiration for this script came from `UTL.vim`, which has similar goals,
 see http://www.vim.org/scripts/script.php?script_id=293
