@@ -132,14 +132,15 @@ fun! s:OpenResolvedScheme(a)
       endif
       return s:RelResolve(Resolved)
     elseif type(Resolved) == type(funcref('s:OpenHttp'))
-      let res = call(Resolved, [a:a[2], a:a[3]])
-      if res == 0
-        return 0
+      let res = call(Resolved, [a:a[0], a:a[2], a:a[3]])
+      if type(res) == type(0) && res == 0
+        return a:a[0]
       elseif res == 1
-        return s:RelResolve(a:a[0])
+        call s:RelResolve(a:a[0])
       elseif len(res) > 0
-        return s:RelResolve(res)
+        call s:RelResolve(res)
       endif
+      return 1
     endif
   endif
   return a:a[0]
@@ -205,7 +206,6 @@ fun! s:RelResolve(token)
       return
     endif
   endfor
-  let s:RelResolveMaxIter = s:RelResolveMaxIter - 1
 endfun
 
 fun! s:Rel()
