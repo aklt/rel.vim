@@ -29,7 +29,7 @@ endif
 
 fun! s:NormalizePath(path)
   let res = substitute(a:path, '^\~', $HOME, "e")
-  let res = substitute(res, '%20', ' ', 'g')
+  let res = substitute(res, '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g')
   return res
 endfun
 
@@ -86,10 +86,10 @@ fun! s:OpenFileOrManAndGoto(a)
       if goto[0] != '/'
         let needle = goto
       endif
-      let needle = substitute(needle, '%20', ' ', 'g')
-      let s = escape(needle, s:esc)
+      let needle = substitute(needle, '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g')
+      let needle = escape(needle, s:esc)
       call cursor(1, 1)
-      call search(s)
+      call search(needle)
     endif
     return 1
   endif
@@ -117,7 +117,7 @@ fun! s:OpenResolvedScheme(a)
     if type(Resolved) == type('')
       if len(a:a[2]) > 0
         if stridx(Resolved, '%p') > -1
-          let Resolved = substitute(Resolved, '%p', a:a[2], 'eg')
+          let Resolved = substitute(Resolved, '%p', a:a[2], 'g')
         else
           echoerr 'missing %p path in g:rel_schemes[' . a:a[1] . ']'
           return
@@ -125,7 +125,7 @@ fun! s:OpenResolvedScheme(a)
       endif
       if len(a:a[3]) > 0
         if stridx(Resolved, '%f') > -1
-          let Resolved = substitute(Resolved, '%f', a:a[3], 'eg')
+          let Resolved = substitute(Resolved, '%f', a:a[3], 'g')
         else
           let Resolved .= '#' . a:a[3]
         endif
@@ -147,9 +147,9 @@ fun! s:OpenResolvedScheme(a)
 endfun
 
 let s:rel_handlers = [
-      \ [ '^\(\w\+\):\([^#]\+\)\%(#\(\%(\/\|:\)\S\+\)\)\?',
+      \ [ '^\(\w\+\):\([^#]*\)\%(#\(\%(\/\|:\)\S\+\)\)\?',
       \   funcref('s:OpenResolvedScheme')],
-      \ [ '^\(https\?:\/\/\S\+\)$', funcref('s:OpenHttp') ],
+      \ [ '^\(\%(http\|ftp\)s\?:\/\/\S\+\)$', funcref('s:OpenHttp') ],
       \ [ '^\(\S\+\.\(\w\+\)\)$', funcref('s:OpenFileExt') ],
       \ [ '^\%(file:\/\/\)\?\([^#]\+\)\%(#\(\%(\/\|:\)\S\+\)\)\?',
       \   funcref('s:OpenFileOrManAndGoto')]
