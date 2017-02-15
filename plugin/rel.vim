@@ -147,9 +147,9 @@ fun! s:OpenResolvedScheme(a)
 endfun
 
 let s:rel_handlers = [
-      \ [ '^\(https\?:\/\/\S\+\)$', funcref('s:OpenHttp') ],
-      \ [ '^\~\(\w\+\):\([^#]\+\)\%(#\(\%(\/\|:\)\S\+\)\)\?',
+      \ [ '^\(\w\+\):\([^#]\+\)\%(#\(\%(\/\|:\)\S\+\)\)\?',
       \   funcref('s:OpenResolvedScheme')],
+      \ [ '^\(https\?:\/\/\S\+\)$', funcref('s:OpenHttp') ],
       \ [ '^\(\S\+\.\(\w\+\)\)$', funcref('s:OpenFileExt') ],
       \ [ '^\%(file:\/\/\)\?\([^#]\+\)\%(#\(\%(\/\|:\)\S\+\)\)\?',
       \   funcref('s:OpenFileOrManAndGoto')]

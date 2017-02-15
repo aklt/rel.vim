@@ -27,13 +27,13 @@ expanded to the value of `$HOME`.
                                                                 *rel-fragments*
 Fragments ~
 
-Links to local text files opened by vim may be suffixed with a fragment part
+Links to local text files opened in vim may be suffixed with a fragment part
 that determines where to place the cursor in the newly opened buffer.
 
-A Line fragment (`#:<number>`) jumps places the cursor at a specific line and
-a search fragment (`#/<text>`) finds a text to place the cursor over.
+A Line fragment (`#:<number>`) places the cursor at a specific line.
+A search fragment (`#/<text>`) finds a text to place the cursor over.
 
-Here is a link to files with a line and a text fragment: >
+For examle:
 
         ~/.vimrc#:10
         ~/.vimrc#/set
@@ -79,7 +79,7 @@ Http browser ~
 
 Change the program to run when opening an `http` or `https` URL: >
 
-        let g:rel_http = 'lynx %s'
+        let g:rel_http = 'firefox %s'
 <
 The string `%s` will be replaced with the link.
 
