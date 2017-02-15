@@ -20,7 +20,7 @@ if ! exists('g:rel_modifiers')
 endif
 
 if ! exists('g:rel_http')
-  let g:rel_http = 'firefox'
+  let g:rel_http = 'firefox %s'
 endif
 
 if ! exists('g:rel_extmap')
@@ -72,6 +72,7 @@ fun! s:OpenFileOrManAndGoto(a)
     endif
     if goto
       if goto[0] == ':'
+        " XXX also go to column
         return cursor(str2nr(strcharpart(goto, 1)), 0)
       endif
       let needle = strcharpart(goto, 1)
@@ -172,14 +173,14 @@ fun! s:TokenAtCursor(line, pos)
     let lastj = len -1
   endif
 
-  let res = strcharpart(a:line, lasti, lastj - lasti + 1)
-  return res
+  return strcharpart(a:line, lasti, lastj - lasti + 1)
 endfun
 
 let s:RelResolveMaxIter = 5
 
 fun! s:RelResolve(token)
-  if s:RelResolveMaxIter <= 0
+  let s:RelResolveMaxIter = s:RelResolveMaxIter - 1
+  if s:RelResolveMaxIter < 0
     echomsg 'rel.vim: recursed too deeply while resolving'
     return
   endif
