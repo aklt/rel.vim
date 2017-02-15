@@ -115,12 +115,20 @@ fun! s:OpenResolvedScheme(a)
   if exists('g:rel_schemes') && has_key(g:rel_schemes, a:a[1])
     let Resolved = g:rel_schemes[a:a[1]]
     if type(Resolved) == type('')
-      " Assume we get a url
       if len(a:a[2]) > 0
-        let Resolved .= '/' . a:a[2]
+        if stridx(Resolved, '%p') > -1
+          let Resolved = substitute(Resolved, '%p', a:a[2], 'eg')
+        else
+          echoerr 'missing %p path in g:rel_schemes[' . a:a[1] . ']'
+          return
+        endif
       endif
       if len(a:a[3]) > 0
-        let Resolved .= '#' . a:a[3]
+        if stridx(Resolved, '%f') > -1
+          let Resolved = substitute(Resolved, '%f', a:a[3], 'eg')
+        else
+          let Resolved .= '#' . a:a[3]
+        endif
       endif
       return s:RelResolve(Resolved)
     elseif type(Resolved) == type(funcref('s:OpenHttp'))
