@@ -70,10 +70,17 @@ fun! s:OpenFileOrManAndGoto(a)
     else
       exe g:rel_modifiers . ' ' . g:rel_open . ' ' . filename
     endif
-    if goto
+    if len(goto) > 0
       if goto[0] == ':'
-        " XXX also go to column
-        return cursor(str2nr(strcharpart(goto, 1)), 0)
+        let line = substitute(goto, '^:\?\(\d\+\).*$', '\1', 'e')
+        let column = substitute(goto, '^:\?\d\+:\(\d\+\).*$', '\1', 'e')
+        if len(line) == 0
+          let line = 1
+        endif
+        if len(column) == 0
+          let column = 1
+        endif
+        return cursor(str2nr(line), str2nr(column))
       endif
       let needle = strcharpart(goto, 1)
       if goto[0] != '/'
@@ -131,11 +138,11 @@ fun! s:OpenResolvedScheme(a)
 endfun
 
 let s:rel_handlers = [
-      \ [ '^\(https\?:\/\/\S\+\)', funcref('s:OpenHttp') ],
-      \ [ '^\~\(\w\+\):\([^#]\+\)\%(#\(\/\S\+\|:\d\+\)\)\?',
+      \ [ '^\(https\?:\/\/\S\+\)$', funcref('s:OpenHttp') ],
+      \ [ '^\~\(\w\+\):\([^#]\+\)\%(#\(\%(\/\|:\)\S\+\)\)\?',
       \   funcref('s:OpenResolvedScheme')],
       \ [ '^\(\S\+\.\(\w\+\)\)$', funcref('s:OpenFileExt') ],
-      \ [ '^\%(file:\/\/\)\?\([^#]\+\)\%(#\(\/\S\+\|:\d\+\)\)\?',
+      \ [ '^\%(file:\/\/\)\?\([^#]\+\)\%(#\(\%(\/\|:\)\S\+\)\)\?',
       \   funcref('s:OpenFileOrManAndGoto')]
       \ ]
 
