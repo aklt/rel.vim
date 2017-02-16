@@ -12,7 +12,7 @@ let s:keepcpo = &cpo
 set cpo&vim
 
 if ! exists('g:rel_open')
-  let g:rel_open = 'tabnew'
+  let g:rel_open = 'open'
 endif
 
 if ! exists('g:rel_modifiers')
@@ -24,7 +24,7 @@ if ! exists('g:rel_http')
 endif
 
 if ! exists('g:rel_extmap')
-  let g:rel_extmap = {'jpg': 'gimp %s'}
+  let g:rel_extmap = {}
 endif
 
 fun! s:NormalizePath(path)
@@ -45,8 +45,6 @@ fun! s:RunJob(cmd, arg)
         \ })
 endfun
 
-let s:esc = '\\/*{}[]."-'
-
 fun! s:OpenFileOrManAndGoto(a)
   let filename = s:NormalizePath(a:a[1])
   let goto = a:a[2]
@@ -58,7 +56,7 @@ fun! s:OpenFileOrManAndGoto(a)
       endif
       let page = strcharpart(filename, 4)
       exe ':Man ' . page
-    elseif filename =~ '^vim:'
+    elseif filename =~ '^help:'
       let page = strcharpart(filename, 4)
       if g:rel_open =~ 'tab'
         exe ':tab help ' . page
@@ -86,8 +84,8 @@ fun! s:OpenFileOrManAndGoto(a)
       if goto[0] != '/'
         let needle = goto
       endif
-      let needle = substitute(needle, '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g')
-      let needle = escape(needle, s:esc)
+      let needle = substitute(needle, 
+            \ '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g')
       call cursor(1, 1)
       call search(needle)
     endif
@@ -155,8 +153,10 @@ let s:rel_handlers = [
       \   funcref('s:OpenFileOrManAndGoto')]
       \ ]
 
+let s:not_ok = '\s\|"'
+
 fun! s:TokenAtCursor(line, pos)
-  if strcharpart(a:line, a:pos, 1) =~ '\s'
+  if strcharpart(a:line, a:pos, 1) =~ s:not_ok
     return echomsg 'no token under cursor'
   endif
   let len = strchars(a:line)
@@ -166,7 +166,7 @@ fun! s:TokenAtCursor(line, pos)
   let lastj = j
 
   while i > -1
-    if strcharpart(a:line, i, 1) =~ '\s'
+    if strcharpart(a:line, i, 1) =~ s:not_ok
       let lasti = i + 1
       let i = -1
     endif
@@ -178,7 +178,7 @@ fun! s:TokenAtCursor(line, pos)
   endif
 
   while j < len
-    if strcharpart(a:line, j, 1) =~ '\s'
+    if strcharpart(a:line, j, 1) =~ s:not_ok
       let lastj = j - 1
       let j = len
     endif
@@ -209,8 +209,8 @@ fun! s:RelResolve(token)
 endfun
 
 fun! s:Rel()
-  let pos = getcurpos()
   let line = getline('.')
+  let pos = getcurpos()
   let token = s:TokenAtCursor(line, pos[2])
   if len(token) > 0
     let s:RelResolveMaxIter = 5
