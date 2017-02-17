@@ -57,7 +57,7 @@ fun! s:OpenFileOrManAndGoto(a)
       let page = strcharpart(filename, 4)
       exe ':Man ' . page
     elseif filename =~ '^help:'
-      let page = strcharpart(filename, 4)
+      let page = strcharpart(filename, 5)
       if g:rel_open =~ 'tab'
         exe ':tab help ' . page
       else
@@ -144,16 +144,19 @@ fun! s:OpenResolvedScheme(a)
   return a:a[0]
 endfun
 
+let s:http_chars = "!#$%&'()*+,-./0-9:;=?@A-Z_a-z~"
+
 let s:rel_handlers = [
       \ [ '^\(\w\+\):\([^#]*\)\%(#\(\%(\/\|:\)\S\+\)\)\?',
-      \   funcref('s:OpenResolvedScheme')],
-      \ [ '^\(\%(http\|ftp\)s\?:\/\/\S\+\)$', funcref('s:OpenHttp') ],
+      \  funcref('s:OpenResolvedScheme')],
+      \ [ '\(\%(http\|ftp\)s\?:\/\/[' . s:http_chars . ']\+\)', 
+      \  funcref('s:OpenHttp') ],
       \ [ '^\(\S\+\.\(\w\+\)\)$', funcref('s:OpenFileExt') ],
       \ [ '^\%(file:\/\/\)\?\([^#]\+\)\%(#\(\%(\/\|:\)\S\+\)\)\?',
-      \   funcref('s:OpenFileOrManAndGoto')]
+      \  funcref('s:OpenFileOrManAndGoto')]
       \ ]
 
-let s:not_ok = '\s\|"'
+let s:not_ok = '\s\|"\|<\|>'
 
 fun! s:TokenAtCursor(line, pos)
   if strcharpart(a:line, a:pos, 1) =~ s:not_ok
