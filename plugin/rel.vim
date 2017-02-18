@@ -27,6 +27,10 @@ if ! exists('g:rel_extmap')
   let g:rel_extmap = {}
 endif
 
+if ! exists('g:rel_highlight')
+  let g:rel_highlight = 3
+endif
+
 fun! s:NormalizePath(path)
   let res = substitute(a:path, '^\~', $HOME, "e")
   let res = substitute(res, '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g')
@@ -157,19 +161,19 @@ let s:rel_handlers = [
       \  funcref('s:OpenFileOrManAndGoto')]
       \ ]
 
-if exists('g:rel_hilight') && g:rel_hilight > 0
+if g:rel_highlight > 0
   hi link xREL htmlLink
   let match = ['\%(\%(^\|[' . s:not_ok . ']\)\@<=\%(' . 
       \ join(add(add(keys(g:rel_schemes), 'man'), 'help'), '\|') .
       \ '\):[^' . s:not_ok . ']\+\)',
       \ '[^' . s:not_ok . ']\+\.\%(' . join(keys(g:rel_extmap), '\|') . '\)',
-      \ '\%(http\|ftp\)s\?:\/\/[' . s:http_chars . ']\+',
       \ '[^' . s:not_ok . ']\+#[\/:][^' . s:not_ok . ']\+',
+      \ '\%(http\|ftp\)s\?:\/\/[' . s:http_chars . ']\+',
       \ '\%(^\|[' . s:not_ok . ']\)\@<=\%(\.\.\|\.\|\~\|\w\+\)\?\/\/\@!\f[^' .
       \ s:not_ok . ']*'
       \ ]
 
-  let g:rel_syn_match = '\%(' . join(match[:g:rel_hilight - 1], '\|') . '\)'
+  let g:rel_syn_match = '\%(' . join(match[:g:rel_highlight - 1], '\|') . '\)'
   unlet match
   augroup REL
     au!

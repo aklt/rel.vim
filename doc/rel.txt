@@ -2,80 +2,88 @@
 ==============================================================================
                 _____  _____  ____     __ __  ___  __  __                    ~
                /  _  \/   __\/  _/    /  |  \/___\/  \/  \                   ~
-               |  _  <|   __||  |--- _\  |  /|   ||  \/  |                   ~
+               |  _  <|   __||  |---  \  |  /|   ||  \/  |                   ~
                \__|\_/\_____/\_____/<_>\___/ \___/\__/\__/                   ~
                                  Resource Linking for Vim                    ~
                                                                              ~
 ==============================================================================
-USAGE                                                           *rel-usage* *rel*
+DESCRIPTION                                               *rel-description* *rel*
 
-Press `<C-k>` to follow the link under the cursor.  If the link begins with a
-`scheme:` it will be resolved to determine the program to execute to open the
-link.  A link may also contain a fragment that determines the cursor location
-in the newly opened file.
-                                                                     *rel-rels*
+Press `<C-k>` in normal mode to follow the link under the cursor.  If the link
+begins with a `scheme:` it will be resolved to determine how to open the link.
+If a link ends in a known suffix it will be opened by the mapping to a known
+program.  A link may also be opened in vim and may contain a fragment part 
+to determine where to place the cursor in the newly opened file.
+
+                                                           *rel-rels* *rel-links*
 RELs ~
 
-The links that `rel.vim` uses consist of only non-whitespace characters.  Any
-sequence of non-whitespace characters under the cursor will be passed along
-and interpreted as a link.
+The links that `rel.vim` uses consist of only non-whitespace characters except
+" < and >. Special characters can be included as escaped URL entities, ie. to
+include a space character in a link you can use `%20`.
 
-To include a space character in a link you can use `%20`.
-
-If the tilde `~` character appears at the beginning of the link it is
-expanded to the value of `$HOME`.
+If the tilde `~` character appears at the beginning of a link it is expanded
+to the value of `$HOME`.
                                                                 *rel-fragments*
 Fragments ~
 
-Links to local text files opened in vim may be suffixed with a fragment part
-that determines where to place the cursor in the newly opened buffer.
+Links to text files opened in vim may be suffixed with a fragment part that
+determines where to place the cursor in the newly opened buffer.
 
-A Line fragment (`#:<number>`) places the cursor at a specific line.
-A search fragment (`#/<text>`) finds a text to place the cursor over.
+A Line fragment (`#:<number>`) places the cursor at a specific line.  A search
+fragment (`#/<text>`) finds a text in the opened file to place the cursor
+over.
 
 For examle:
 
         ~/.vimrc#:10
+
+Will place the cursor on line 10 of the `$HOME/.vimrc` file and
+
         ~/.vimrc#/set
->
-SCHEMES                                                           *rel-schemes*
 
-The vanilla version of `rel.vim` defines actions for 2 schemes.  See
-|rel-config| on how to define your own.
+will place the cursor at the first occurrence of the string "set".
 
-vim: ~
+                                                                  *rel-schemes*
+Schemes ~
 
-This scheme refers to a location in a vim help file, ie. >
+This plugin defines 2 special schemes, `help:` to lookup vim help files and
+`man:` to use the |man.vim| script to read man pages. See |rel-config| on how
+to define more schemes.
 
-        vim:rel.txt#/^This%20scheme
+The `help:` scheme refers to a vim help file, for example >
+
+        help:rel.txt#/The%20help:
 <
 shold refer to this sentence.
 
-man: ~
-
-The `man:` scheme will cause `rel.vim` to open a man page using the `:Man`
-command.  It will complain if there is no such command. >
+If `man.vim` is loaded following the link: >
 
          man:vim#/^ON-LINE
 <
-should open the vim man page.
+should open the vim man page using the |:Man| command.
 
-http: ~
+Finally, if an `http://`, `https://` or `ftp://` URL is encountered the
+command in |g:rel_http| will be run, passing the url to open it.
 
-If a `http://` or `https://` URL is encountered rel will execute the command
-in |g:rel_http| passing the url to open it.
+                                                                   *rel-suffix*
+Suffixes ~
 
-MAPPING                                                           *rel-mapping*
+A map between a suffix and a program can be defined in |g:rel_extmap| to
+determine which program to use to open links with a specific suffix.
 
-You can map a key combination of your liking to `<Plug>(Rel)` to create a
-shortcut for following a link.  If no map exists the default is: >
+CONFIGURATION                                                      *rel-config*
+
+                                                                      *rel-map*
+Map ~
+
+You can map a key combination of your liking to `<Plug>(Rel)` to follow a
+link.  If no map exists the default is: >
 
         :nmap <C-k> <Plug>(Rel)
 <
-CONFIGURATION                                                      *rel-config*
-
-Http browser ~
                                                                    *g:rel_http*
+Http browser ~
 
 Change the program to run when opening an `http` or `https` URL: >
 
@@ -83,26 +91,28 @@ Change the program to run when opening an `http` or `https` URL: >
 <
 The string `%s` will be replaced with the link.
 
-Opening a buffer ~
                                                                    *g:rel_open*
+Opening a buffer ~
 
-Change `g:rel_open` to determine how a buffer should be opened when
-following a link: >
+Change `g:rel_open` to determine how a buffer should be opened when following
+a link: >
 
         let g:rel_open = 'tabnew'
 >
 Set this to one of the vim commands used to open a file: |:tabnew|, |:vsplit|,
-|:split|.
+|:split|.  Note that this does not affect how `man:` links are opened.  See
+|:Man| on how to change how the buffer for man pages is opened.
+
                                                               *g:rel_modifiers*
 
 The value of `g:rel_modifiers` determines how to open a buffer when
-`g:rel_open` is not |:tabnew|.  See vim::vert
+`g:rel_open` is not |:tabnew|.  For possible values, see |:vert|.
 
-External programs ~
                                                                  *g:rel_extmap*
+External programs ~
 
 You can define a dictionary of extensions mapping to programs to determine how
-to open a link by its extension: >
+to open a link by its extension. The extension name is case insensitive. >
 
         let g:rel_extmap = {
             \ 'jpg': 'gimp %s'
@@ -110,13 +120,58 @@ to open a link by its extension: >
 <
 In the rhs of these maps `%s` will be replaced with the link to the file.
 
-Custom schemas ~
                                                                 *g:rel_schemes*
+Custom schemes ~
 
-Not implemented yet.
+The variable `g:rel_schemes` may contain a mapping between a scheme and a
+string or a function to rewrite the link to determine how to open the link.
 
-The variable `g:rel_schemes` may contain a mapping between a regular
-expression to match a link and a function to run if the regex matches.
+If the value in the mapping dictionary is a string it may contain the special
+strings `%p`, which will be replaced with the path part of the link and `%f`,
+which will be replaced with the fragment part.  This can be used to create
+shortcuts to paths, so that: >
+
+        let g:rel_schemes = {
+            \ 'plugin': $HOME . '/.vim/plugin/%p.vim#%f'
+            \ }
+<
+would allow referring to a vim plugin file using only it's basename, for
+example: >
+
+        plugin:mark#:20
+<
+would refer to line 20 of the `$HOME/.vim/plugin/mark.vim` file, if it exists.
+
+                                                              *g:rel_highlight*
+Syntax highlight links ~
+
+Set this to a value above 0 to get syntax highlighting of text that looks like
+links that would be followed. More is highlighted the higher the value.
+
+Setting >
+
+        let g:rel_highlight = 1
+<
+will highlight links defined as part of a scheme in |g:rel_schemes|. >
+
+        let g:rel_highlight = 2
+<
+will also highlight links with the known suffixes in |g:rel_extmap|. >
+
+        let g:rel_highlight = 3
+<
+will highlight also text that includes a `#:` or `#/` fragment. >
+
+        let g:rel_highlight = 4
+<
+will also highlight http, https and ftp URLs. >
+
+Finally go bananas and try to highlight everything that looks remotely like a
+link by setting >
+
+        let g:rel_highlight = 5
+<
+The default is a value of 3.
 
 ABOUT                                                               *rel-about*
 
