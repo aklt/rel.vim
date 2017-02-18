@@ -144,6 +144,7 @@ fun! s:OpenResolvedScheme(a)
   return a:a[0]
 endfun
 
+let s:not_ok = ' \t"<>'
 let s:http_chars = "!#$%&'()*+,-./0-9:;=?@A-Z_a-z~"
 
 let s:rel_handlers = [
@@ -156,10 +157,29 @@ let s:rel_handlers = [
       \  funcref('s:OpenFileOrManAndGoto')]
       \ ]
 
-let s:not_ok = '\s\|"\|<\|>'
+if exists('g:rel_hilight') && g:rel_hilight > 0
+  hi link xREL htmlLink
+  let match = ['\%(\%(^\|[' . s:not_ok . ']\)\@<=\%(' . 
+      \ join(add(add(keys(g:rel_schemes), 'man'), 'help'), '\|') .
+      \ '\):[^' . s:not_ok . ']\+\)',
+      \ '[^' . s:not_ok . ']\+\.\%(' . join(keys(g:rel_extmap), '\|') . '\)',
+      \ '\%(http\|ftp\)s\?:\/\/[' . s:http_chars . ']\+',
+      \ '[^' . s:not_ok . ']\+#[\/:][^' . s:not_ok . ']\+',
+      \ '\%(^\|[' . s:not_ok . ']\)\@<=\%(\.\.\|\.\|\~\|\w\+\)\?\/\/\@!\f[^' .
+      \ s:not_ok . ']*'
+      \ ]
+
+  let g:rel_syn_match = '\%(' . join(match[:g:rel_hilight - 1], '\|') . '\)'
+  unlet match
+  augroup REL
+    au!
+    au BufWinEnter * call matchadd('xREL', g:rel_syn_match)
+  augroup END
+endif
 
 fun! s:TokenAtCursor(line, pos)
-  if strcharpart(a:line, a:pos, 1) =~ s:not_ok
+  let rx = '[' . s:not_ok . ']'
+  if strcharpart(a:line, a:pos, 1) =~ rx
     return echomsg 'no token under cursor'
   endif
   let len = strchars(a:line)
@@ -169,7 +189,7 @@ fun! s:TokenAtCursor(line, pos)
   let lastj = j
 
   while i > -1
-    if strcharpart(a:line, i, 1) =~ s:not_ok
+    if strcharpart(a:line, i, 1) =~ rx
       let lasti = i + 1
       let i = -1
     endif
@@ -181,7 +201,7 @@ fun! s:TokenAtCursor(line, pos)
   endif
 
   while j < len
-    if strcharpart(a:line, j, 1) =~ s:not_ok
+    if strcharpart(a:line, j, 1) =~ rx
       let lastj = j - 1
       let j = len
     endif
