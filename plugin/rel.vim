@@ -213,7 +213,7 @@ fun! s:TokenAtCursor(line, pos)
   endwhile
 
   if j == len  " lastj was not assigned
-    let lastj = len -1
+    let lastj = len - 1
   endif
 
   return strcharpart(a:line, lasti, lastj - lasti + 1)

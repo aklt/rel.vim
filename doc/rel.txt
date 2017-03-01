@@ -12,14 +12,14 @@ DESCRIPTION                                               *rel-description* *rel
 Press `<C-k>` in normal mode to follow the link under the cursor.  If the link
 begins with a `scheme:` it will be resolved to determine how to open the link.
 If a link ends in a known suffix it will be opened by the mapping to a known
-program.  A link may also be opened in vim and may contain a fragment part 
-to determine where to place the cursor in the newly opened file.
+program.  Also, link opened in vim may contain a fragment part to determine
+where to place the cursor in the newly opened file.
 
                                                            *rel-rels* *rel-links*
 RELs ~
 
 The links that `rel.vim` uses consist of only non-whitespace characters except
-" < and >. Special characters can be included as escaped URL entities, ie. to
+" < and >.  Special characters can be included as escaped URL entities, ie. to
 include a space character in a link you can use `%20`.
 
 If the tilde `~` character appears at the beginning of a link it is expanded
@@ -38,26 +38,32 @@ For examle:
 
         ~/.vimrc#:10
 
-Will place the cursor on line 10 of the `$HOME/.vimrc` file and
+will place the cursor on line 10 of the `$HOME/.vimrc` file and
 
         ~/.vimrc#/set
 
-will place the cursor at the first occurrence of the string "set".
+will place the cursor at the first occurrence of the string "set" in this
+file.
+
+                                                                   *rel-suffix*
+Suffixes ~
+
+A map between a suffix and a program can be defined in |g:rel_extmap| to
+determine which program to use to open links with a specific suffix.  See
+|rel-suffix|.
 
                                                                   *rel-schemes*
 Schemes ~
 
 This plugin defines 2 special schemes, `help:` to lookup vim help files and
-`man:` to use the |man.vim| script to read man pages. See |rel-config| on how
-to define more schemes.
+`man:` to use the |man.vim| script to read man pages.  For example >
 
-The `help:` scheme refers to a vim help file, for example >
-
-        help:rel.txt#/The%20help:
+        help:rel.txt#/The%20%60help:
 <
-shold refer to this sentence.
+should refer to this sentence.  Note that `%60` translates to the backtick
+character before the "help" text.
 
-If `man.vim` is loaded following the link: >
+If `man.vim` is loaded then following the link: >
 
          man:vim#/^ON-LINE
 <
@@ -66,11 +72,7 @@ should open the vim man page using the |:Man| command.
 Finally, if an `http://`, `https://` or `ftp://` URL is encountered the
 command in |g:rel_http| will be run, passing the url to open it.
 
-                                                                   *rel-suffix*
-Suffixes ~
-
-A map between a suffix and a program can be defined in |g:rel_extmap| to
-determine which program to use to open links with a specific suffix.
+See |g:rel_schemes| on how to define more schemes.
 
 CONFIGURATION                                                      *rel-config*
 
@@ -97,7 +99,7 @@ Opening a buffer ~
 Change `g:rel_open` to determine how a buffer should be opened when following
 a link: >
 
-        let g:rel_open = 'tabnew'
+        let g:rel_open = 'vsplit'
 >
 Set this to one of the vim commands used to open a file: |:tabnew|, |:vsplit|,
 |:split|.  Note that this does not affect how `man:` links are opened.  See
@@ -124,23 +126,42 @@ In the rhs of these maps `%s` will be replaced with the link to the file.
 Custom schemes ~
 
 The variable `g:rel_schemes` may contain a mapping between a scheme and a
-string or a function to rewrite the link to determine how to open the link.
+string or a function to rewrite the link to determine how that link should be
+opened.  Once the link has been rewritten all of the known methods of opening
+links are tried again.  This allows rewriting links several times over.
+
+String scheme value ~
 
 If the value in the mapping dictionary is a string it may contain the special
 strings `%p`, which will be replaced with the path part of the link and `%f`,
 which will be replaced with the fragment part.  This can be used to create
-shortcuts to paths, so that: >
+shortcuts to paths. For example: >
 
         let g:rel_schemes = {
             \ 'plugin': $HOME . '/.vim/plugin/%p.vim#%f'
             \ }
 <
-would allow referring to a vim plugin file using only it's basename, for
-example: >
+would allow referring to a file in the local vim plugins using only the files
+basename, for example: >
 
         plugin:mark#:20
 <
 would refer to line 20 of the `$HOME/.vim/plugin/mark.vim` file, if it exists.
+
+Function scheme value ~
+
+If the value in the `g:rel_schemes` dictionary is a |Funcref| then it is
+called with a List of `[full_link, path_part, fragment_part]` and what this
+function returns will determines what will happen.  Returning
+
+`"a string"` will cause this string to be passed to each of the known methods
+for opening links, possibly opening the link.
+
+the value `1` indicates that the function has opened the link and no further
+methods will be tried. 
+
+the value `0` indicates that the function could not open the link and the
+remaining methods should be tried. 
 
                                                               *g:rel_highlight*
 Syntax highlight links ~
