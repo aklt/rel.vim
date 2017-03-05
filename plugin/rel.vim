@@ -1,9 +1,9 @@
-"============================================================================
+"===============================================================================
 " File:        rel.vim
 " Description: Vim plugin to handle links to resources
 " Author:      Anders Thøgersen <anders [at] bladre.dk>
-" License:     This program is free software. It comes without any warranty,
-"============================================================================
+" License:     This program is free software. It comes without any warranty.
+"===============================================================================
 if exists('g:rel_version')
   finish
 endif
@@ -99,6 +99,7 @@ fun! s:OpenFileOrManAndGoto(a)
 endfun
 
 fun! s:OpenHttp(a)
+  " echomsg 's:OpenHttp ' . string(a:a)
   call s:RunJob(g:rel_http, a:a[1])
   return 1
 endfun
@@ -114,8 +115,13 @@ fun! s:OpenFileExt(a)
 endfun
 
 fun! s:OpenResolvedScheme(a)
+  " echomsg 's:OpenResolvedScheme ' . string(a:a)
   if exists('g:rel_schemes') && has_key(g:rel_schemes, a:a[1])
     let Resolved = g:rel_schemes[a:a[1]]
+    if empty(a:a[2]) && empty(a:a[3])
+      echomsg 'rel.vim: scheme ' . a:a[1] . ' is ' . string(Resolved)
+      return
+    endif
     if type(Resolved) == type('')
       if len(a:a[2]) > 0
         if stridx(Resolved, '%p') > -1
@@ -184,7 +190,7 @@ endif
 fun! s:TokenAtCursor(line, pos)
   let rx = '[' . s:not_ok . ']'
   if strcharpart(a:line, a:pos, 1) =~ rx
-    return echomsg 'no token under cursor'
+    return echomsg 'rel.vim: no token under cursor'
   endif
   let len = strchars(a:line)
   let i = a:pos
