@@ -88,7 +88,7 @@ fun! s:OpenFileOrManAndGoto(a)
       if goto[0] != '/'
         let needle = goto
       endif
-      let needle = substitute(needle, 
+      let needle = substitute(needle,
             \ '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g')
       call cursor(1, 1)
       call search(needle)
@@ -160,7 +160,7 @@ let s:http_chars = "!#$%&'()*+,-./0-9:;=?@A-Z_a-z~"
 let s:rel_handlers = [
       \ [ '^\(\w\+\):\([^#]*\)\%(#\(\%(\/\|:\)\S\+\)\)\?',
       \  funcref('s:OpenResolvedScheme')],
-      \ [ '\(\%(http\|ftp\)s\?:\/\/[' . s:http_chars . ']\+\)', 
+      \ [ '\(\%(http\|ftp\)s\?:\/\/[' . s:http_chars . ']\+\)',
       \  funcref('s:OpenHttp') ],
       \ [ '^\(\S\+\.\(\w\+\)\)$', funcref('s:OpenFileExt') ],
       \ [ '^\%(file:\/\/\)\?\([^#]\+\)\%(#\(\%(\/\|:\)\S\+\)\)\?',
@@ -169,7 +169,7 @@ let s:rel_handlers = [
 
 if g:rel_highlight > 0
   hi link xREL htmlLink
-  let match = ['\%(\%(^\|[' . s:not_ok . ']\)\@<=\%(' . 
+  let match = ['\%(\%(^\|[' . s:not_ok . ']\)\@<=\%(' .
       \ join(add(add(keys(g:rel_schemes), 'man'), 'help'), '\|') .
       \ '\):[^' . s:not_ok . ']\+\)',
       \ '[^' . s:not_ok . ']\+\.\%(' . join(keys(g:rel_extmap), '\|') . '\)',
@@ -187,44 +187,6 @@ if g:rel_highlight > 0
   augroup END
 endif
 
-fun! s:TokenAtCursor(line, pos)
-  let rx = '[' . s:not_ok . ']'
-  if strcharpart(a:line, a:pos, 1) =~ rx
-    return echomsg 'rel.vim: no token under cursor'
-  endif
-  let len = strchars(a:line)
-  let i = a:pos
-  let j = a:pos
-  let lasti = i
-  let lastj = j
-
-  while i > -1
-    if strcharpart(a:line, i, 1) =~ rx
-      let lasti = i + 1
-      let i = -1
-    endif
-    let i = i - 1
-  endwhile
-
-  if i == -1 " lasti was not assigned
-    let lasti = 0
-  endif
-
-  while j < len
-    if strcharpart(a:line, j, 1) =~ rx
-      let lastj = j - 1
-      let j = len
-    endif
-    let j = j + 1
-  endwhile
-
-  if j == len  " lastj was not assigned
-    let lastj = len - 1
-  endif
-
-  return strcharpart(a:line, lasti, lastj - lasti + 1)
-endfun
-
 let s:RelResolveMaxIter = 5
 
 fun! s:RelResolve(token)
@@ -241,13 +203,13 @@ fun! s:RelResolve(token)
   endfor
 endfun
 
-fun! s:Rel()
-  let line = getline('.')
-  let pos = getcurpos()
-  let token = s:TokenAtCursor(line, pos[2])
-  if len(token) > 0
-    let s:RelResolveMaxIter = 5
-    call s:RelResolve(token)
+fun! s:Rel(...)
+  if ! empty(a:000)
+    let token = a:000[0]
+    if len(token) > 0
+      let s:RelResolveMaxIter = 5
+      call s:RelResolve(token)
+    endif
   endif
 endfun
 
@@ -255,7 +217,8 @@ if ! hasmapto('<Plug>(Rel)')
   nmap <unique> <C-k> <Plug>(Rel)
 endif
 
-nnoremap <Plug>(Rel) :call <SID>Rel()<CR>
+nnoremap <Plug>(Rel) :call <SID>Rel(expand('<cWORD>'))<CR>
+command! -nargs=* Rel call <SID>Rel(<q-args>)
 
 let &cpo= s:keepcpo
 unlet s:keepcpo
