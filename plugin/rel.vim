@@ -11,12 +11,14 @@ let g:rel_version = '0.1.1'
 let s:keepcpo = &cpo
 set cpo&vim
 
+scriptencoding utf-8
+
 if ! exists('g:rel_open')
   let g:rel_open = 'open'
 endif
 
 if ! exists('g:rel_modifiers')
-  let g:rel_modifiers = 'vert'
+  let g:rel_modifiers = ''
 endif
 
 if ! exists('g:rel_http')
@@ -24,15 +26,19 @@ if ! exists('g:rel_http')
 endif
 
 if ! exists('g:rel_extmap')
-  let g:rel_extmap = {}
+  let g:rel_extmap = {'html': 'firefox'}
 endif
 
 if ! exists('g:rel_highlight')
   let g:rel_highlight = 3
 endif
 
+if ! exists('g:rel_schemes')
+  let g:rel_schemes = {}
+endif
+
 fun! s:NormalizePath(path)
-  let res = substitute(a:path, '^\~', $HOME, "e")
+  let res = substitute(a:path, '^\~', $HOME, 'e')
   let res = substitute(res, '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g')
   return res
 endfun
@@ -43,37 +49,39 @@ fun! s:RunJob(cmd, arg)
     return system(job)
   endif
   call job_start(job, {
-        \ "err_io": "null",
-        \ "in_io": "null",
-        \ "out_io": "null"
+        \ 'err_io': 'null',
+        \ 'in_io': 'null',
+        \ 'out_io': 'null'
         \ })
 endfun
 
-fun! s:OpenFileOrManAndGoto(a)
+fun! s:OpenManHelpOrFileAndGoto(a)
   let filename = s:NormalizePath(a:a[1])
   let goto = a:a[2]
   if len(filename) > 0
-    if filename =~ '^man:'
-      if ! exists(":Man")
+    let helpOrMan = ''
+    if filename =~# '^man:'
+      if ! exists(':Man')
         echoerr 'please enable :Man command with "runtime ftplugin/man.vim"'
         return
       endif
       let page = strcharpart(filename, 4)
-      exe ':Man ' . page
-    elseif filename =~ '^help:'
+      let helpOrMan = ':Man ' . page
+    elseif filename =~# '^help:'
       let page = strcharpart(filename, 5)
-      if g:rel_open =~ 'tab'
-        exe ':tab help ' . page
+      if g:rel_open =~# 'tab'
+        let helpOrMan = ':tab help ' . page
       else
-        exe g:rel_modifiers . ' help ' . page
+        let helpOrMan = g:rel_modifiers . ' help ' . page
       endif
-    elseif g:rel_open =~ 'tab'
-      exe g:rel_open . ' ' . filename
-    else
-      exe g:rel_modifiers . ' ' . g:rel_open . ' ' . filename
     endif
     if len(goto) > 0
-      if goto[0] == ':'
+      let line = 1
+      let column = 1
+      let frag = ''
+      let needle = ''
+      if goto[0] ==# ':' " Jump to position
+        let frag = ':'
         let line = substitute(goto, '^:\?\(\d\+\).*$', '\1', 'e')
         let column = substitute(goto, '^:\?\d\+:\(\d\+\).*$', '\1', 'e')
         if len(line) == 0
@@ -82,16 +90,42 @@ fun! s:OpenFileOrManAndGoto(a)
         if len(column) == 0
           let column = 1
         endif
-        return cursor(str2nr(line), str2nr(column))
+      else " Jump to regex
+        let frag = '/'
+        let needle = strcharpart(goto, 1)
+        if goto[0] !=# '/'
+          let needle = goto
+        endif
+        let needle = substitute(needle,
+              \ '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g')
       endif
-      let needle = strcharpart(goto, 1)
-      if goto[0] != '/'
-        let needle = goto
+    endif
+    let peditopen = ''
+    if ! empty(helpOrMan) 
+      exe helpOrMan
+    else
+      " jump to fragment in preview window
+      if g:rel_open =~# '^:\?ped'
+        if frag ==# ':'
+          let peditopen = '+:' . line
+        elseif frag ==# '/'
+          let peditopen = '+/' . needle
+        endif
       endif
-      let needle = substitute(needle,
-            \ '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g')
-      call cursor(1, 1)
-      call search(needle)
+      if g:rel_open =~# 'tab'
+        exe g:rel_open . ' ' . filename
+      else
+        exe g:rel_modifiers . ' ' . g:rel_open . ' ' . peditopen . ' ' . filename
+      endif
+    endif
+    " no jump in preview window so place cursor in this window
+    if empty(peditopen)
+      if frag ==# ':'
+        call cursor(str2nr(line), str2nr(column))
+      elseif frag ==# '/'
+        call cursor(1, 1)
+        call search(needle)
+      endif
     endif
     return 1
   endif
@@ -164,18 +198,18 @@ let s:rel_handlers = [
       \  funcref('s:OpenHttp') ],
       \ [ '^\(\S\+\.\(\w\+\)\)$', funcref('s:OpenFileExt') ],
       \ [ '^\%(file:\/\/\)\?\([^#]\+\)\%(#\(\%(\/\|:\)\S\+\)\)\?',
-      \  funcref('s:OpenFileOrManAndGoto')]
+      \  funcref('s:OpenManHelpOrFileAndGoto')]
       \ ]
 
 if g:rel_highlight > 0
   hi link xREL htmlLink
-  let match = ['\%(\%(^\|[' . s:not_ok . ']\)\@<=\%(' .
+  let match = ['\%(\%(^\|[' . s:not_ok . ']\)\zs\%(' .
       \ join(add(add(keys(g:rel_schemes), 'man'), 'help'), '\|') .
       \ '\):[^' . s:not_ok . ']\+\)',
-      \ '[^' . s:not_ok . ']\+\.\%(' . join(keys(g:rel_extmap), '\|') . '\)',
+      \ '\%([^' . s:not_ok . ']\+\.\%(' . join(keys(g:rel_extmap), '\|') . '\)\)',
       \ '[^' . s:not_ok . ']\+#[\/:][^' . s:not_ok . ']\+',
       \ '\%(http\|ftp\)s\?:\/\/[' . s:http_chars . ']\+',
-      \ '\%(^\|[' . s:not_ok . ']\)\@<=\%(\.\.\|\.\|\~\|\w\+\)\?\/\/\@!\f[^' .
+      \ '\%(^\|[' . s:not_ok . ']\)\zs\%(\.\.\|\.\|\~\|\w\+\)\?\/\/\@!\f[^' .
       \ s:not_ok . ']*'
       \ ]
 
@@ -218,7 +252,7 @@ if ! hasmapto('<Plug>(Rel)')
 endif
 
 nnoremap <Plug>(Rel) :call <SID>Rel(expand('<cWORD>'))<CR>
-command! -nargs=* Rel call <SID>Rel(<q-args>)
+command! -nargs=* Rel call <SID>Rel(<f-args>)
 
 let &cpo= s:keepcpo
 unlet s:keepcpo

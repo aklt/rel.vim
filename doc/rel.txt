@@ -7,7 +7,8 @@
                                  Resource Linking for Vim                    ~
                                                                              ~
 ==============================================================================
-DESCRIPTION                                               *rel-description* *rel*
+
+DESCRIPTION                                           *Rel* *rel-description* *rel*
 
 Press `<C-k>` in normal mode to follow the link under the cursor.  If the link
 begins with a `scheme:` it will be resolved to determine how to open the link.
@@ -34,7 +35,7 @@ A Line fragment (`#:<number>`) places the cursor at a specific line.  A search
 fragment (`#/<text>`) finds a text in the opened file to place the cursor
 over.
 
-For examle:
+For example:
 
         ~/.vimrc#:10
 
@@ -45,6 +46,8 @@ will place the cursor on line 10 of the `$HOME/.vimrc` file and
 will place the cursor at the first occurrence of the string "set" in this
 file.
 
+Note Fragments function for files opened in vim only, but not for the built in
+     `help:` of `man:` schemes.  
                                                                    *rel-suffix*
 Suffixes ~
 
