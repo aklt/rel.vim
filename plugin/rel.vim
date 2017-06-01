@@ -75,10 +75,10 @@ fun! s:OpenManHelpOrFileAndGoto(a)
         let helpOrMan = g:rel_modifiers . ' help ' . page
       endif
     endif
+    let frag = ''
     if len(goto) > 0
       let line = 1
       let column = 1
-      let frag = ''
       let needle = ''
       if goto[0] ==# ':' " Jump to position
         let frag = ':'
