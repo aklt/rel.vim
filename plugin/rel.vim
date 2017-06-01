@@ -26,7 +26,7 @@ if ! exists('g:rel_http')
 endif
 
 if ! exists('g:rel_extmap')
-  let g:rel_extmap = {'html': 'firefox'}
+  let g:rel_extmap = {'html': 'firefox %s'}
 endif
 
 if ! exists('g:rel_highlight')
@@ -101,7 +101,7 @@ fun! s:OpenManHelpOrFileAndGoto(a)
       endif
     endif
     let peditopen = ''
-    if ! empty(helpOrMan) 
+    if ! empty(helpOrMan)
       exe helpOrMan
     else
       " jump to fragment in preview window

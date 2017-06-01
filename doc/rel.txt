@@ -46,14 +46,13 @@ will place the cursor on line 10 of the `$HOME/.vimrc` file and
 will place the cursor at the first occurrence of the string "set" in this
 file.
 
-Note Fragments function for files opened in vim only, but not for the built in
-     `help:` of `man:` schemes.  
+Note that fragments function only for text files opened in vim and for the
+built in `help:` of `man:` schemes.
                                                                    *rel-suffix*
 Suffixes ~
 
 A map between a suffix and a program can be defined in |g:rel_extmap| to
-determine which program to use to open links with a specific suffix.  See
-|rel-suffix|.
+determine which program to use to open links with a specific suffix.
 
                                                                   *rel-schemes*
 Schemes ~
@@ -117,10 +116,10 @@ The value of `g:rel_modifiers` determines how to open a buffer when
 External programs ~
 
 You can define a dictionary of extensions mapping to programs to determine how
-to open a link by its extension. The extension name is case insensitive. >
+files with this suffix should be opened.  The default value is: >
 
         let g:rel_extmap = {
-            \ 'jpg': 'gimp %s'
+            \ 'html': 'firefox %s'
             \ }
 <
 In the rhs of these maps `%s` will be replaced with the link to the file.
@@ -157,14 +156,14 @@ If the value in the `g:rel_schemes` dictionary is a |Funcref| then it is
 called with a List of `[full_link, path_part, fragment_part]` and what this
 function returns will determines what will happen.  Returning
 
-`"a string"` will cause this string to be passed to each of the known methods
-for opening links, possibly opening the link.
+- `"a string"` will cause this string to be passed to each of the known methods
+  for opening links, possibly opening the link.
 
-the value `1` indicates that the function has opened the link and no further
-methods will be tried. 
+- the value `1` indicates that the function has opened the link and no further
+  methods will be tried.
 
-the value `0` indicates that the function could not open the link and the
-remaining methods should be tried. 
+- the value `0` indicates that the function could not open the link and the
+  remaining methods should be tried.
 
                                                               *g:rel_highlight*
 Syntax highlight links ~
@@ -184,7 +183,7 @@ will also highlight links with the known suffixes in |g:rel_extmap|. >
 
         let g:rel_highlight = 3
 <
-will highlight also text that includes a `#:` or `#/` fragment. >
+will highlight all text that includes a `#:` or `#/` fragment. >
 
         let g:rel_highlight = 4
 <
