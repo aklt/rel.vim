@@ -7,7 +7,7 @@
 if exists('g:rel_version')
   finish
 endif
-let g:rel_version = '0.2.0'
+let g:rel_version = '0.2.1'
 let s:keepcpo = &cpo
 set cpo&vim
 
