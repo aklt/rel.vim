@@ -60,14 +60,14 @@ fun! s:OpenManHelpOrFileAndGoto(a)
   let goto = a:a[2]
   if len(filename) > 0
     let helpOrMan = ''
-    if filename =~# '^man:'
+    if filename =~? '^man:'
       if ! exists(':Man')
         echoerr 'please enable :Man command with "runtime ftplugin/man.vim"'
         return
       endif
       let page = strcharpart(filename, 4)
       let helpOrMan = ':Man ' . page
-    elseif filename =~# '^help:'
+    elseif filename =~? '^help:'
       let page = strcharpart(filename, 5)
       if g:rel_open =~# 'tab'
         let helpOrMan = ':tab help ' . page
@@ -75,10 +75,10 @@ fun! s:OpenManHelpOrFileAndGoto(a)
         let helpOrMan = g:rel_modifiers . ' help ' . page
       endif
     endif
+    let frag = ''
     if len(goto) > 0
       let line = 1
       let column = 1
-      let frag = ''
       let needle = ''
       if goto[0] ==# ':' " Jump to position
         let frag = ':'
@@ -203,7 +203,7 @@ let s:rel_handlers = [
 
 if g:rel_highlight > 0
   hi link xREL htmlLink
-  let match = ['\%(\%(^\|[' . s:not_ok . ']\)\zs\%(' .
+  let match = ['\c\%(\%(^\|[' . s:not_ok . ']\)\zs\%(' .
       \ join(add(add(keys(g:rel_schemes), 'man'), 'help'), '\|') .
       \ '\):[^' . s:not_ok . ']\+\)',
       \ '\%([^' . s:not_ok . ']\+\.\%(' . join(keys(g:rel_extmap), '\|') . '\)\)',
@@ -249,6 +249,7 @@ endfun
 
 if ! hasmapto('<Plug>(Rel)')
   nmap <unique> <C-k> <Plug>(Rel)
+  nmap <LeftMouse> <Plug>(Rel)
 endif
 
 nnoremap <Plug>(Rel) :call <SID>Rel(expand('<cWORD>'))<CR>

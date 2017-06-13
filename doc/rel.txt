@@ -1,4 +1,4 @@
-*rel.txt*         Define and follow links to resources with
+*rel.txt*         Define and follow links to resources with          *Rel* v0.2.1
 ==============================================================================
                 _____  _____  ____     __ __  ___  __  __                    ~
                /  _  \/   __\/  _/    /  |  \/___\/  \/  \                   ~
@@ -60,10 +60,10 @@ Schemes ~
 This plugin defines 2 special schemes, `help:` to lookup vim help files and
 `man:` to use the |man.vim| script to read man pages.  For example >
 
-        help:rel.txt#/The%20%60help:
+        help:rel.txt#/should%20refer
 <
-should refer to this sentence.  Note that `%60` translates to the backtick
-character before the "help" text.
+should refer to this sentence.  Note that `%20` is translated to the space
+character.
 
 If `man.vim` is loaded then following the link: >
 
@@ -164,6 +164,8 @@ function returns will determines what will happen.  Returning
 
 - the value `0` indicates that the function could not open the link and the
   remaining methods should be tried.
+
+TODO Add an example
 
                                                               *g:rel_highlight*
 Syntax highlight links ~
