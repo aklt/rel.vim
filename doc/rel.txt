@@ -1,14 +1,13 @@
-*rel.txt*         Define and follow links to resources with          *Rel* v0.2.1
+*rel.txt*         Define and follow links to resources with                 *Rel*
 ==============================================================================
                 _____  _____  ____     __ __  ___  __  __                    ~
                /  _  \/   __\/  _/    /  |  \/___\/  \/  \                   ~
                |  _  <|   __||  |---  \  |  /|   ||  \/  |                   ~
                \__|\_/\_____/\_____/<_>\___/ \___/\__/\__/                   ~
                                  Resource Linking for Vim                    ~
-                                                                             ~
-=================================================================== v0.2.0 ===
+=================================================================== v0.2.1 ===
 
-DESCRIPTION                                           *Rel* *rel-description* *rel*
+DESCRIPTION                                               *rel-description* *rel*
 
 Press `<C-k>` in normal mode to follow the link under the cursor.  If the link
 begins with a `scheme:` it will be resolved to determine how to open the link.
