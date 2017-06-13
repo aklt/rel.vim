@@ -249,6 +249,7 @@ endfun
 
 if ! hasmapto('<Plug>(Rel)')
   nmap <unique> <C-k> <Plug>(Rel)
+  nmap <LeftMouse> <Plug>(Rel)
 endif
 
 nnoremap <Plug>(Rel) :call <SID>Rel(expand('<cWORD>'))<CR>
