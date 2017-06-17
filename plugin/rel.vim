@@ -241,6 +241,10 @@ fun! s:Rel(...)
   if ! empty(a:000)
     let token = a:000[0]
     if len(token) > 0
+      " Recognize markdown links
+      if token =~# '\[[^\]]\+\]([^\)]\+)'
+        let token = substitute(token, '!\?\[[^\]]\+\](\([^\)]\+\))', '\1', '')
+      endif
       let s:RelResolveMaxIter = 5
       call s:RelResolve(token)
     endif
