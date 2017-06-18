@@ -96,8 +96,8 @@ fun! s:OpenManHelpOrFileAndGoto(a)
         if goto[0] !=# '/'
           let needle = goto
         endif
-        let needle = substitute(needle,
-              \ '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g')
+        let needle = escape(substitute(needle,
+              \ '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g'), ' ')
       endif
     endif
     let peditopen = ''
@@ -109,7 +109,7 @@ fun! s:OpenManHelpOrFileAndGoto(a)
         if frag ==# ':'
           let peditopen = '+:' . line
         elseif frag ==# '/'
-          let peditopen = '+/' . needle
+          let peditopen = '+:1/' . needle
         endif
       endif
       if g:rel_open =~# 'tab'
