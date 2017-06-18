@@ -110,8 +110,14 @@ fun! s:OpenManHelpOrFileAndGoto(a)
         if goto[0] !=# '/'
           let needle = goto
         endif
-        let needle = escape(substitute(needle,
-              \ '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g'), ' ')
+        " work around nvim bug: cannot handle funcref in substitution
+        if has('nvim')
+          let needle = escape(substitute(needle,
+                \ '%20', ' ', 'g'), ' ')
+        else
+          let needle = escape(substitute(needle, 
+                \ '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g'), ' ')
+        endif
       endif
     endif
     let peditopen = ''
