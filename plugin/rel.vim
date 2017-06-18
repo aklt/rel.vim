@@ -7,7 +7,7 @@
 if exists('g:rel_version')
   finish
 endif
-let g:rel_version = '0.2.1'
+let g:rel_version = '0.2.2'
 if has('nvim')
   if !has('nvim-0.2.0')
     echoerr 'rel.vim: Need at least neovim 0.2.0'
