@@ -1,7 +1,9 @@
-# Vim Rel - Resource links for vim
+# Rel.vim - Resource links for vim
 
 This is a Vim plugin for following and defining links to other files. You can
 define which programs to use to open different types of files.
+
+Note that at least vim v8.0.0020 or neovim 0.2.0 is required.
 
 See [doc/rel.txt](doc/rel.txt) for more info
 

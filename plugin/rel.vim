@@ -8,13 +8,24 @@ if exists('g:rel_version')
   finish
 endif
 let g:rel_version = '0.2.1'
+if has('nvim')
+  if !has('nvim-0.2.0')
+    echoerr 'rel.vim: Need at least neovim 0.2.0'
+    finish
+  endif
+else
+  if v:version < 800 || (v:version == 800 && !has('patch0020'))
+    echoerr 'rel.vim: Need at least vim 8.0.0020'
+    finish
+  endif
+endif
 let s:keepcpo = &cpo
 set cpo&vim
 
 scriptencoding utf-8
 
 if ! exists('g:rel_open')
-  let g:rel_open = 'open'
+  let g:rel_open = 'edit'
 endif
 
 if ! exists('g:rel_modifiers')
@@ -96,8 +107,8 @@ fun! s:OpenManHelpOrFileAndGoto(a)
         if goto[0] !=# '/'
           let needle = goto
         endif
-        let needle = substitute(needle,
-              \ '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g')
+        let needle = escape(substitute(needle,
+              \ '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g'), ' ')
       endif
     endif
     let peditopen = ''
@@ -109,7 +120,7 @@ fun! s:OpenManHelpOrFileAndGoto(a)
         if frag ==# ':'
           let peditopen = '+:' . line
         elseif frag ==# '/'
-          let peditopen = '+/' . needle
+          let peditopen = '+:1/' . needle
         endif
       endif
       if g:rel_open =~# 'tab'
@@ -241,6 +252,10 @@ fun! s:Rel(...)
   if ! empty(a:000)
     let token = a:000[0]
     if len(token) > 0
+      " Recognize markdown links
+      if token =~# '\[[^\]]\+\]([^\)]\+)'
+        let token = substitute(token, '!\?\[[^\]]\+\](\([^\)]\+\))', '\1', '')
+      endif
       let s:RelResolveMaxIter = 5
       call s:RelResolve(token)
     endif
