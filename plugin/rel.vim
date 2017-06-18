@@ -7,6 +7,17 @@
 if exists('g:rel_version')
   finish
 endif
+if has('nvim')
+  if !has('nvim-0.2.0')
+    echoerr 'rel.vim: Need at least neovim 0.2.0'
+    finish
+  endif
+else
+  if v:version < 800 || (v:version == 800 && !has('patch0020'))
+    echoerr 'rel.vim: Need at least vim 8.0.0020'
+    finish
+  endif
+endif
 let g:rel_version = '0.1.1'
 let s:keepcpo = &cpo
 set cpo&vim
@@ -14,7 +25,7 @@ set cpo&vim
 scriptencoding utf-8
 
 if ! exists('g:rel_open')
-  let g:rel_open = 'open'
+  let g:rel_open = 'edit'
 endif
 
 if ! exists('g:rel_modifiers')
