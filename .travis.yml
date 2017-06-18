@@ -1,2 +1,10 @@
-script: ./test.sh
+install:
+  - wget ftp://ftp.vim.org/pub/vim/unix/vim-8.0.069.tar.bz2
+  - tar -xvjf vim-8.0.069.tar.bz2
+  - (cd vim80 && ./configure --prefix=/tmp/ && make -j 4 && make install)
 
+before_script: 
+  - export PATH=/tmp/bin:${PATH}
+
+script:
+  - ./test.sh
