@@ -1,10 +1,23 @@
+language: bash
+
 install:
   - wget ftp://ftp.vim.org/pub/vim/unix/vim-8.0.069.tar.bz2
   - tar -xvjf vim-8.0.069.tar.bz2
   - (cd vim80 && ./configure --prefix=/tmp/ && make -j 4 && make install)
 
+addons:
+  apt:
+    sources:
+      - sourceline: ppa:neovim-ppa/unstable
+      # - sourceline: ppa:jonathonf/vim
+    packages:
+      - software-properties-common
+      - neovim
+
 before_script: 
   - export PATH=/tmp/bin:${PATH}
+  - nvim --version
+  - vim --version
 
 script:
   - ./test.sh

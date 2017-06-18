@@ -36,7 +36,7 @@ call ExpectCursor('8:10')
 
 :Rel test.sh#/rel_test
 call Expect("s:OpenManHelpOrFileAndGoto(['test.sh#/rel_test', 'test.sh', '/rel_test', '', '', '', '', '', '', '']) -->  edit  test.sh /rel_test")
-call ExpectCursor('7:14')
+call ExpectCursor('9:16')
 
 "
 " Edit in Preview window
@@ -52,33 +52,42 @@ call ExpectCursor('4:3')
 :Rel test.sh#:8
 call Expect("s:OpenManHelpOrFileAndGoto(['test.sh#:8', 'test.sh', ':8', '', '', '', '', '', '', '']) -->  pedit +:8 test.sh")
 :wincmd k
-call ExpectCursor('8:3')
+call ExpectCursor('8:5')
 :wincmd j
 
 :Rel test.sh#/rel_test
 call Expect("s:OpenManHelpOrFileAndGoto(['test.sh#/rel_test', 'test.sh', '/rel_test', '', '', '', '', '', '', '']) -->  pedit +:1/rel_test test.sh")
 :wincmd k
-call ExpectCursor('7:3')
+call ExpectCursor('9:5')
 :wincmd j
 
 :Rel help:variables#/when%20compiled
 call Expect("s:OpenManHelpOrFileAndGoto(['help:variables#/when%20compiled', 'help:variables', '/when%20compiled', '', '', '', '', '', '', '']) -->  help variables /when\\ compiled")
-call ExpectCursor('44:37')
 
-let manVim = $VIMRUNTIME . '/ftplugin/man.vim'
+if has('nvim')
+  " call ExpectCursor('1296:59')
+else
+  call ExpectCursor('44:37')
+endif
+
+let manVim = '/tmp/vim80/runtime/ftplugin/man.vim'
 if filereadable(manVim)
   exe ':source ' . manVim
   :Rel man:ls#/The%20SIZE
   call Expect("s:OpenManHelpOrFileAndGoto(['man:ls#/The%20SIZE', 'man:ls', '/The%20SIZE', '', '', '', '', '', '', '']) --> :Man ls /The\\ SIZE")
-  call ExpectCursor('176:8')
+  " call ExpectCursor('176:8')
 else
   echomsg 'skip..' . s:test_count
   let s:test_count = s:test_count + 1
 endif
 
-:Rel http://www.vim.org
-call Expect('s:RunJob(firefox http://www.vim.org)')
+if !has('nvim')
+  :Rel http://www.vim.org
+  call Expect('s:RunJob(firefox http://www.vim.org)')
+endif
 
-:qa
+:qa!
+:qa!
+:qa!
 
 " vi:tw=190
