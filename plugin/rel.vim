@@ -64,6 +64,9 @@ fun! s:RunJob(cmd, arg)
         \ 'in_io': 'null',
         \ 'out_io': 'null'
         \ })
+  if exists('g:rel_test_mode')
+    let g:rel_test_mode_result = 's:RunJob(' . job . ')'
+  endif
 endfun
 
 fun! s:OpenManHelpOrFileAndGoto(a)
@@ -114,6 +117,10 @@ fun! s:OpenManHelpOrFileAndGoto(a)
     let peditopen = ''
     if ! empty(helpOrMan)
       exe helpOrMan
+      if exists('g:rel_test_mode')
+        let g:rel_test_mode_result = 's:OpenManHelpOrFileAndGoto(' 
+              \ . string(a:a) . ') --> ' . helpOrMan
+      endif
     else
       " jump to fragment in preview window
       if g:rel_open =~# '^:\?ped'
@@ -123,19 +130,31 @@ fun! s:OpenManHelpOrFileAndGoto(a)
           let peditopen = '+:1/' . needle
         endif
       endif
+      let exeCmd = ''
       if g:rel_open =~# 'tab'
-        exe g:rel_open . ' ' . filename
+        let exeCmd = g:rel_open . ' ' . filename
       else
-        exe g:rel_modifiers . ' ' . g:rel_open . ' ' . peditopen . ' ' . filename
+        let exeCmd = g:rel_modifiers . ' ' . g:rel_open . ' ' . peditopen . ' ' . filename
+      endif
+      exe exeCmd
+      if exists('g:rel_test_mode')
+        let g:rel_test_mode_result = 's:OpenManHelpOrFileAndGoto(' 
+              \ . string(a:a) . ') --> ' . exeCmd
       endif
     endif
     " no jump in preview window so place cursor in this window
     if empty(peditopen)
       if frag ==# ':'
         call cursor(str2nr(line), str2nr(column))
+        if exists('g:rel_test_mode')
+          let g:rel_test_mode_result .= ' ' . line . ':' . column 
+        endif
       elseif frag ==# '/'
         call cursor(1, 1)
         call search(needle)
+        if exists('g:rel_test_mode')
+          let g:rel_test_mode_result .= ' ' . '/' . needle 
+        endif
       endif
     endif
     return 1
