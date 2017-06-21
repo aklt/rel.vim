@@ -36,8 +36,25 @@ if ! exists('g:rel_http')
   let g:rel_http = 'firefox %s'
 endif
 
-if ! exists('g:rel_extmap')
-  let g:rel_extmap = {'html': 'firefox %s'}
+" TODO
+let default_extmap = {
+      \ 'html': 'firefox %s',
+      \ 'jpg': 'chromium %s',
+      \ 'png': 'geeqie %s',
+      \ 'gif': 'imv %s',
+      \ 'avi': 'vlc %s',
+      \ 'mpg': 'vlc %s',
+      \ 'mpeg': 'vlc %s',
+      \ 'mp4': 'vlc %s',
+      \ 'mp3': 'vlc %s',
+      \ 'wav': 'vlc %s',
+      \ 'gnumeric': 'gnumeric %s',
+      \ }
+
+if exists('g:rel_extmap')
+  let g:rel_extmap = extend(default_extmap, g:rel_extmap)
+else
+  let g:rel_extmap = default_extmap
 endif
 
 if ! exists('g:rel_highlight')
