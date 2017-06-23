@@ -27,6 +27,54 @@ if ! exists('g:rel_http')
   let g:rel_http = 'firefox %s'
 endif
 
+let default_mime_programs = {
+      \   'application': {
+      \     'vnd.ms-excel': {
+      \       'unix': ['gnumeric %f'],
+      \       'win32': ['excel %f']
+      \     },
+      \     'x-gnumeric': {
+      \       'unix': ['gnumeric %f'],
+      \       'win32': ['gnumeric %f']
+      \     }
+      \   },
+      \   'audio': {
+      \     '*': {
+      \       'unix': ['vlc %f'],
+      \       'win32': ['TODO %f']
+      \     },
+      \     'mpeg': {
+      \       'unix': ['clementine %']
+      \     }
+      \   },
+      \   'image': {
+      \     '*': {
+      \       'unix':  ['geeqie %f', 'eog %f', 'gimp %f'],
+      \       'win32': ['adcdc']
+      \     },
+      \     'gif': {
+      \       'unix': ['imv %f', 'geeqie %f']
+      \     }
+      \   },
+      \   'inode': {
+      \     'directory': {
+      \       'unix': ['rox %f']
+      \     }
+      \   },
+      \   'video': {
+      \     '*': {
+      \       'unix': ['vlc %f'],
+      \       'win32': ['vlc %f']
+      \     }
+      \   }
+      \ }
+
+if exists('g:rel_mime_programs')
+  let s:mimePrograms = extend(default_mime_programs, g:rel_mime_programs)
+else
+  let s:mimePrograms = default_mime_programs
+endif
+
 fun! s:NormalizePath(path)
   let res = substitute(a:path, '^\~', $HOME, 'e')
   let res = substitute(res, '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g')
@@ -46,6 +94,70 @@ fun! s:RunJob(cmd, arg)
   if exists('g:rel_test_mode')
     let g:rel_test_mode_result = 's:RunJob(' . job . ')'
   endif
+endfun
+
+" Run one of the shell commands replacing %f with the file name and  continuing
+" until one of the succeeds.
+"
+" Returns [0, [cmd output]] on success and
+"         [errCode, [error], errCode, [error], ...] on failure
+fun! s:RunOneOf (commands, filename)
+  let out = ''
+  let res = []
+  for p in a:commands
+    let cmd = substitute(p, '%f', a:filename, 'g')
+    let out = systemlist(cmd)
+    if v:shell_error == 0
+      return [0, out]
+    else
+      call add(res, v:shell_error)
+      call add(res, out)
+    endif
+  endfor
+  return res
+endfun
+
+fun! s:GetMimeType (filename)
+  let res = system('file --mime-type ' . a:filename)
+  if v:shell_error == 0
+    let mime = substitute(res, '^[^:]\+:\s*\|\n$', '', 'gm')
+    return mime
+  endif
+endfun
+
+let s:os = 'unix'
+
+if has('macunix')
+  let s:os = 'macunix'
+elseif has('win32')
+  let s:os = 'win32'
+elseif has('win32unix')
+  let s:os = 'win32unix'
+endif
+
+fun! s:LookupMimeProgram (mimeType)
+  let key = split(a:mimeType, '/')
+  if ! has_key(s:mimePrograms, key[0])
+    return [1, 'no mime head: ' . key[0]]
+  endif
+  let it = s:mimePrograms[key[0]]
+  if ! has_key(it, key[1])
+    if ! has_key(it, '*')
+      return [2, 'no mime tail: ' . key[1] . ' or *']
+    endif
+    let it = it['*']
+  else
+    let it = it[key[1]]
+  endif
+  if ! has_key(it, s:os)
+    return [3, 'no OS key for ' . a:mimeType]
+  endif
+  return [0, it[s:os]]
+endfun
+
+fun! GetMimePrograms(filename)
+  let mime = s:GetMimeType(a:filename)
+  return s:LookupMimeProgram(mime)
 endfun
 
 fun! s:OpenManHelpOrFileAndGoto(a)
