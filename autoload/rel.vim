@@ -254,6 +254,16 @@ fun! s:OpenManHelpOrFileAndGoto(a)
         endif
       endif
     endif
+    " Open folds if any
+    if ! empty(peditopen) 
+      wincmd P
+      if &previewwindow
+        silent! .foldopen
+      endif
+      wincmd p
+    else
+      silent! .foldopen
+    endif
     return 1
   endif
   return a:a[0]
