@@ -8,6 +8,17 @@ if has('nvim')
     echoerr 'rel.vim: Need at least neovim 0.2.0'
     finish
   endif
+  fun! s:ReplaceEscapes(str) abort
+    let escapes = ['%20', '%23', '%2f', '%26', '%7e']
+    let replace = [' ',   '#',   '/',   '&',   '~']
+    let res = a:str
+    let idx = 0
+    for et in escapes
+      let res = substitute(res, et, replace[idx], 'gi')
+      let idx = idx + 1
+    endfor
+    return res
+  endfun
 else
   if v:version < 800 || (v:version == 800 && !has('patch0020'))
     echoerr 'rel.vim: Need at least vim 8.0.0020'
@@ -75,13 +86,13 @@ else
   let s:mimePrograms = default_mime_programs
 endif
 
-fun! s:NormalizePath(path)
+fun! s:NormalizePath(path) abort
   let res = substitute(a:path, '^\~', $HOME, 'e')
   let res = substitute(res, '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g')
-  return res
+  return escape(res, ' ')
 endfun
 
-fun! s:RunJob(cmd, arg)
+fun! s:RunJob(cmd, arg) abort
   let job = substitute(a:cmd, '%s', a:arg, 'g')
   if ! has('job')
     return system(job)
@@ -101,7 +112,7 @@ endfun
 "
 " Returns [0, [cmd output]] on success and
 "         [errCode, [error], errCode, [error], ...] on failure
-fun! s:RunOneOf (commands, filename)
+fun! s:RunOneOf (commands, filename) abort
   let out = ''
   let res = []
   for p in a:commands
@@ -117,7 +128,7 @@ fun! s:RunOneOf (commands, filename)
   return res
 endfun
 
-fun! s:GetMimeType (filename)
+fun! s:GetMimeType (filename) abort
   let res = system('file --mime-type ' . a:filename)
   if v:shell_error == 0
     let mime = substitute(res, '^[^:]\+:\s*\|\n$', '', 'gm')
@@ -135,7 +146,7 @@ elseif has('win32unix')
   let s:os = 'win32unix'
 endif
 
-fun! s:LookupMimeProgram (mimeType)
+fun! s:LookupMimeProgram (mimeType) abort
   let key = split(a:mimeType, '/')
   if ! has_key(s:mimePrograms, key[0])
     return [1, 'no mime head: ' . key[0]]
@@ -155,12 +166,12 @@ fun! s:LookupMimeProgram (mimeType)
   return [0, it[s:os]]
 endfun
 
-fun! GetMimePrograms(filename)
+fun! GetMimePrograms(filename) abort
   let mime = s:GetMimeType(a:filename)
   return s:LookupMimeProgram(mime)
 endfun
 
-fun! s:OpenManHelpOrFileAndGoto(a)
+fun! s:OpenManHelpOrFileAndGoto(a) abort
   let filename = s:NormalizePath(a:a[1])
   let goto = a:a[2]
   if len(filename) > 0
@@ -203,8 +214,7 @@ fun! s:OpenManHelpOrFileAndGoto(a)
         endif
         " work around nvim bug: cannot handle funcref in substitution
         if has('nvim')
-          let needle = escape(substitute(needle,
-                \ '%20', ' ', 'g'), ' ')
+          let needle = escape(s:ReplaceEscapes(needle), ' ')
         else
           let needle = escape(substitute(needle, 
                 \ '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g'), ' ')
@@ -269,13 +279,13 @@ fun! s:OpenManHelpOrFileAndGoto(a)
   return a:a[0]
 endfun
 
-fun! s:OpenHttp(a)
+fun! s:OpenHttp(a)abort
   " echomsg 's:OpenHttp ' . string(a:a)
   call s:RunJob(g:rel_http, a:a[1])
   return 1
 endfun
 
-fun! s:OpenFileExt(a)
+fun! s:OpenFileExt(a) abort
   let rel = a:a[1]
   let ext = tolower(a:a[2])
   if len(ext) == 0 || ! has_key(g:rel_extmap, ext)
@@ -285,7 +295,7 @@ fun! s:OpenFileExt(a)
   return s:RunJob(job, s:NormalizePath(a:a[1]))
 endfun
 
-fun! s:OpenResolvedScheme(a)
+fun! s:OpenResolvedScheme(a) abort
   " echomsg 's:OpenResolvedScheme ' . string(a:a)
   if exists('g:rel_schemes') && has_key(g:rel_schemes, a:a[1])
     let Resolved = g:rel_schemes[a:a[1]]
@@ -337,7 +347,7 @@ let s:rel_handlers = [
 
 let s:RelResolveMaxIter = 5
 
-fun! s:RelResolve(token)
+fun! s:RelResolve(token) abort
   let s:RelResolveMaxIter = s:RelResolveMaxIter - 1
   if s:RelResolveMaxIter < 0
     echomsg 'rel.vim: recursed too deeply while resolving'
@@ -351,7 +361,7 @@ fun! s:RelResolve(token)
   endfor
 endfun
 
-fun! rel#Rel(...)
+fun! rel#Rel(...) abort
   if ! empty(a:000)
     let token = a:000[0]
     if len(token) > 0

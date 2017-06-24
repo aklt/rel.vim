@@ -87,7 +87,5 @@ if !has('nvim')
 endif
 
 :qa!
-:qa!
-:qa!
 
 " vi:tw=190
