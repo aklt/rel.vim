@@ -9,8 +9,8 @@ if has('nvim')
     finish
   endif
   fun! s:ReplaceEscapes(str) abort
-    let escapes = ['%20', '%23', '%2f', '%26', '%7e']
-    let replace = [' ',   '#',   '/',   '&',   '~']
+    let escapes = ['%20', '%23', '%2f', '%26', '%7e', '%28', '%29']
+    let replace = [' ',   '#',   '/',   '&',   '~',   '(',   ')']
     let res = a:str
     let idx = 0
     for et in escapes
