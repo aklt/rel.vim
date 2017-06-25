@@ -1,4 +1,19 @@
 
+let Test = rel#StunterTest()
+
+call Test('s:NormalizePath', ['/tmp/foo'], '/tmp/foo')
+call Test('s:NormalizePath', ['/tmp/foo'], '/tmp/foo')
+call Test('s:NormalizePath', ['/tmp/%20foo'], '/tmp/\ foo')
+call Test('s:NormalizePath', ['~/%26foo'], $HOME . '/&foo')
+
+call Test('s:GetMimeType', ['/tmp'], 'inode/directory')
+
+call Test('s:LookupMimeProgram', ['inode/directory'], [0, ['rox %f']])
+call Test('s:LookupMimeProgram', ['audio/x-wav'], [0, ['vlc %f']])
+
+:qa!
+finish
+
 let s:test_count = 0
 
 fun! Expect(res)

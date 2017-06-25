@@ -166,7 +166,7 @@ fun! s:LookupMimeProgram (mimeType) abort
   return [0, it[s:os]]
 endfun
 
-fun! GetMimePrograms(filename) abort
+fun! s:GetMimePrograms(filename) abort
   let mime = s:GetMimeType(a:filename)
   return s:LookupMimeProgram(mime)
 endfun
@@ -216,7 +216,7 @@ fun! s:OpenManHelpOrFileAndGoto(a) abort
         if has('nvim')
           let needle = escape(s:ReplaceEscapes(needle), ' ')
         else
-          let needle = escape(substitute(needle, 
+          let needle = escape(substitute(needle,
                 \ '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g'), ' ')
         endif
       endif
@@ -225,7 +225,7 @@ fun! s:OpenManHelpOrFileAndGoto(a) abort
     if ! empty(helpOrMan)
       exe helpOrMan
       if exists('g:rel_test_mode')
-        let g:rel_test_mode_result = 's:OpenManHelpOrFileAndGoto(' 
+        let g:rel_test_mode_result = 's:OpenManHelpOrFileAndGoto('
               \ . string(a:a) . ') --> ' . helpOrMan
       endif
     else
@@ -245,7 +245,7 @@ fun! s:OpenManHelpOrFileAndGoto(a) abort
       endif
       exe exeCmd
       if exists('g:rel_test_mode')
-        let g:rel_test_mode_result = 's:OpenManHelpOrFileAndGoto(' 
+        let g:rel_test_mode_result = 's:OpenManHelpOrFileAndGoto('
               \ . string(a:a) . ') --> ' . exeCmd
       endif
     endif
@@ -254,18 +254,18 @@ fun! s:OpenManHelpOrFileAndGoto(a) abort
       if frag ==# ':'
         call cursor(str2nr(line), str2nr(column))
         if exists('g:rel_test_mode')
-          let g:rel_test_mode_result .= ' ' . line . ':' . column 
+          let g:rel_test_mode_result .= ' ' . line . ':' . column
         endif
       elseif frag ==# '/'
         call cursor(1, 1)
         call search(needle)
         if exists('g:rel_test_mode')
-          let g:rel_test_mode_result .= ' ' . '/' . needle 
+          let g:rel_test_mode_result .= ' ' . '/' . needle
         endif
       endif
     endif
     " Open folds if any
-    if ! empty(peditopen) 
+    if ! empty(peditopen)
       wincmd P
       if &previewwindow
         silent! .foldopen
@@ -373,6 +373,15 @@ fun! rel#Rel(...) abort
       call s:RelResolve(token)
     endif
   endif
+endfun
+
+fun! rel#StunterTest() abort
+  fun! s:SID() abort
+    return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_SID$')
+  endfun
+  let sid = s:SID()
+  runtime stunter.vim
+  return Stunter(s:SID())
 endfun
 
 let &cpo = s:save_cpo
