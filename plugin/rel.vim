@@ -41,8 +41,8 @@ if ! exists('g:rel_schemes')
   let g:rel_schemes = {}
 endif
 
-let g:rel_chars_not_ok = ' \t"<>'
-let g:rel_http_chars = "!#$%&'*+,-./0-9:;=?@A-Z_a-z~"
+let g:rel_chars_not_ok = ' \t()"<>' . "'"
+let g:rel_http_chars = '!#$%&*+,-./0-9:;=?@A-Z_a-z~'
 
 if g:rel_highlight > 0
   hi link xREL htmlLink

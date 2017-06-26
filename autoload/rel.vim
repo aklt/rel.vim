@@ -9,8 +9,8 @@ if has('nvim')
     finish
   endif
   fun! s:ReplaceEscapes(str) abort
-    let escapes = ['%20', '%23', '%2f', '%26', '%7e', '%28', '%29']
-    let replace = [' ',   '#',   '/',   '&',   '~',   '(',   ')']
+    let escapes = ['%20', '%23', '%2f', '%26', '%7e', '%28', '%29', '%27', '%22']
+    let replace = [' ',   '#',   '/',   '&',   '~',   '(',   ')',   "'",   '"']
     let res = a:str
     let idx = 0
     for et in escapes
@@ -365,10 +365,6 @@ fun! rel#Rel(...) abort
   if ! empty(a:000)
     let token = a:000[0]
     if len(token) > 0
-      " Recognize markdown links
-      if token =~# '\[[^\]]\+\]([^\)]\+)'
-        let token = substitute(token, '!\?\[[^\]]\+\](\([^\)]\+\))', '\1', '')
-      endif
       let s:RelResolveMaxIter = 5
       call s:RelResolve(token)
     endif
