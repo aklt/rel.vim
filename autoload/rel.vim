@@ -173,9 +173,6 @@ endfun
 
 fun! s:OpenManHelpOrFileAndGoto(a) abort " (_, filename, goto)
   let l:filename = s:NormalizePath(a:a[1])
-  if l:filename[0] !=# '/'
-    let l:filename = expand('%:p:h') . '/' . l:filename
-  endif
   let l:goto = a:a[2]
   if len(l:filename) > 0
     let l:helpOrMan = ''
@@ -232,6 +229,10 @@ fun! s:OpenManHelpOrFileAndGoto(a) abort " (_, filename, goto)
               \ . string(a:a) . ') --> ' . l:helpOrMan
       endif
     else
+      " Give files an absolute path
+      if l:filename[0] !=# '/'
+        let l:filename = expand('%:p:h') . '/' . l:filename
+      endif
       " jump to fragment in preview window
       if g:rel_open =~# '^:\?ped'
         if l:frag ==# ':'
@@ -370,6 +371,8 @@ fun! rel#Rel(...) abort
   if ! empty(a:000)
     let l:token = a:000[0]
     if len(l:token) > 0
+      let l:token = substitute(l:token, '^[' . g:rel_chars_not_ok . ']\+\|' .
+            \ '[' . g:rel_chars_not_ok . ']\+$', '', 'g')
       let s:RelResolveMaxIter = 5
       call s:RelResolve(l:token)
     endif
@@ -384,5 +387,5 @@ fun! rel#StunterTest() abort
   return Stunter(s:SID())
 endfun
 
-let &cpo = s:save_cpo
+let &cpoptions = s:save_cpo
 unlet s:save_cpo

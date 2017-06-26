@@ -1,8 +1,8 @@
 
 fun! ExpectCursor(pos)
-  let realPos = join(getpos('.')[1:2], ':')
-  if a:pos !=# realPos
-    throw 'Expected cursor at ' . a:pos . ' got ' . realPos
+  let l:realPos = join(getpos('.')[1:2], ':')
+  if a:pos !=# l:realPos
+    throw 'Expected cursor at ' . a:pos . ' got ' . l:realPos
   else
     echomsg 'cursor..ok'
   endif
@@ -10,25 +10,41 @@ endfun
 
 let Test = rel#StunterTest()
 
+echomsg 's:NormalizePath'
 call Test('s:NormalizePath', ['/tmp/foo'], '/tmp/foo')
 call Test('s:NormalizePath', ['/tmp/foo'], '/tmp/foo')
 call Test('s:NormalizePath', ['/tmp/%20foo'], '/tmp/\ foo')
 call Test('s:NormalizePath', ['~/%26foo'], $HOME . '/&foo')
 
+echomsg 's:GetMimeType'
 call Test('s:GetMimeType', ['/tmp'], 'inode/directory')
 
+echomsg 's:LookupMimeProgram'
 call Test('s:LookupMimeProgram', ['inode/directory'], [0, ['rox %f']])
 call Test('s:LookupMimeProgram', ['audio/x-wav'], [0, ['vlc %f']])
 
+echomsg 'rel#Rel - various'
 let g:rel_open = 'edit'
 call Test('rel#Rel', ['test.vim#:4'], 0)
 call ExpectCursor('4:1')
 
-call Test('rel#Rel', [ 'test.vim#:8:10' ], 0)
-" call ExpectCursor('8:10')
-" 
-" call Test('rel#Rel', ['test.vim#/cursor..'], 0)
-" call ExpectCursor('5:21')
+call Test('rel#Rel', [ 'test.vim#:7:10' ], 0)
+call ExpectCursor('7:10')
+
+call Test('rel#Rel', ['test.vim#/cursor..'], 0)
+call ExpectCursor('5:21')
+
+call Test('rel#Rel', ['"test.vim#/cursor.."'], 0)
+call ExpectCursor('5:21')
+
+call Test('rel#Rel', ['(<"test.vim#/cursor..">)'], 0)
+call ExpectCursor('5:21')
+
+echomsg 'rel#Rel - help:'
+call Test('rel#Rel', ['help:variables#/when%20compiled'], 0)
+
+echomsg 'rel#Rel - help:'
+call Test('rel#Rel', ['help:variables#/when%20compiled'], 0)
 
 :qa
 finish
@@ -45,9 +61,9 @@ fun! Expect(res)
 endfun
 
 fun! ExpectCursor(pos)
-  let realPos = join(getpos('.')[1:2], ':')
-  if a:pos !=# realPos
-    throw 'Expected cursor at ' . a:pos . ' got ' . realPos
+  let l:realPos = join(getpos('.')[1:2], ':')
+  if a:pos !=# l:realPos
+    throw 'Expected cursor at ' . a:pos . ' got ' . l:realPos
   else
     echomsg 'ok..' . s:test_count
     let s:test_count = s:test_count + 1
