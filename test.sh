@@ -10,6 +10,7 @@ dir=$(pwd)
     -c ':syntax on' \
     -c ':let g:rel_test_mode = 1' \
     -c ":set rtp=${dir}/,${dir}/test" \
+    -c ':set shortmess=aT' \
     -c ":source ${dir}/plugin/rel.vim" \
     -c ":redir >> /tmp/rel.vim.test.$$.txt" \
     -c ':source ./test.vim' \
