@@ -1,5 +1,5 @@
-let s:save_cpo = &cpo
-set cpo&vim
+let s:save_cpo = &cpoptions
+set cpoptions&vim
 
 scriptencoding utf-8
 
@@ -9,15 +9,15 @@ if has('nvim')
     finish
   endif
   fun! s:ReplaceEscapes(str) abort
-    let escapes = ['%20', '%23', '%2f', '%26', '%7e', '%28', '%29', '%27', '%22']
-    let replace = [' ',   '#',   '/',   '&',   '~',   '(',   ')',   "'",   '"']
-    let res = a:str
-    let idx = 0
-    for et in escapes
-      let res = substitute(res, et, replace[idx], 'gi')
-      let idx = idx + 1
+    let l:escapes = ['%20', '%23', '%2f', '%26', '%7e', '%28', '%29', '%27', '%22']
+    let l:replace = [' ',   '#',   '/',   '&',   '~',   '(',   ')',   "'",   '"']
+    let l:res = a:str
+    let l:idx = 0
+    for l:et in l:escapes
+      let l:res = substitute(l:res, l:et, l:replace[l:idx], 'gi')
+      let l:idx = l:idx + 1
     endfor
-    return res
+    return l:res
   endfun
 else
   if v:version < 800 || (v:version == 800 && !has('patch0020'))
@@ -38,7 +38,7 @@ if ! exists('g:rel_http')
   let g:rel_http = 'firefox %s'
 endif
 
-let default_mime_programs = {
+let s:default_mime_programs = {
       \   'application': {
       \     'vnd.ms-excel': {
       \       'unix': ['gnumeric %f'],
@@ -81,29 +81,29 @@ let default_mime_programs = {
       \ }
 
 if exists('g:rel_mime_programs')
-  let s:mimePrograms = extend(default_mime_programs, g:rel_mime_programs)
+  let s:mimePrograms = extend(s:default_mime_programs, g:rel_mime_programs)
 else
-  let s:mimePrograms = default_mime_programs
+  let s:mimePrograms = s:default_mime_programs
 endif
 
 fun! s:NormalizePath(path) abort
-  let res = substitute(a:path, '^\~', $HOME, 'e')
-  let res = substitute(res, '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g')
-  return escape(res, ' ')
+  let l:res = substitute(a:path, '^\~', $HOME, 'e')
+  let l:res = substitute(l:res, '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g')
+  return escape(l:res, ' ')
 endfun
 
 fun! s:RunJob(cmd, arg) abort
-  let job = substitute(a:cmd, '%s', a:arg, 'g')
+  let l:job = substitute(a:cmd, '%s', a:arg, 'g')
   if ! has('job')
-    return system(job)
+    return system(l:job)
   endif
-  call job_start(job, {
+  call job_start(l:job, {
         \ 'err_io': 'null',
         \ 'in_io': 'null',
         \ 'out_io': 'null'
         \ })
   if exists('g:rel_test_mode')
-    let g:rel_test_mode_result = 's:RunJob(' . job . ')'
+    let g:rel_test_mode_result = 's:RunJob(' . l:job . ')'
   endif
 endfun
 
@@ -113,26 +113,26 @@ endfun
 " Returns [0, [cmd output]] on success and
 "         [errCode, [error], errCode, [error], ...] on failure
 fun! s:RunOneOf (commands, filename) abort
-  let out = ''
-  let res = []
-  for p in a:commands
-    let cmd = substitute(p, '%f', a:filename, 'g')
-    let out = systemlist(cmd)
+  let l:out = ''
+  let l:res = []
+  for l:p in a:commands
+    let l:cmd = substitute(l:p, '%f', a:filename, 'g')
+    let l:out = systemlist(l:cmd)
     if v:shell_error == 0
-      return [0, out]
+      return [0, l:out]
     else
-      call add(res, v:shell_error)
-      call add(res, out)
+      call add(l:res, v:shell_error)
+      call add(l:res, l:out)
     endif
   endfor
-  return res
+  return l:res
 endfun
 
 fun! s:GetMimeType (filename) abort
-  let res = system('file --mime-type ' . a:filename)
+  let l:res = system('file --mime-type ' . a:filename)
   if v:shell_error == 0
-    let mime = substitute(res, '^[^:]\+:\s*\|\n$', '', 'gm')
-    return mime
+    let l:mime = substitute(l:res, '^[^:]\+:\s*\|\n$', '', 'gm')
+    return l:mime
   endif
 endfun
 
@@ -147,125 +147,125 @@ elseif has('win32unix')
 endif
 
 fun! s:LookupMimeProgram (mimeType) abort
-  let key = split(a:mimeType, '/')
-  if ! has_key(s:mimePrograms, key[0])
-    return [1, 'no mime head: ' . key[0]]
+  let l:key = split(a:mimeType, '/')
+  if ! has_key(s:mimePrograms, l:key[0])
+    return [1, 'no mime head: ' . l:key[0]]
   endif
-  let it = s:mimePrograms[key[0]]
-  if ! has_key(it, key[1])
-    if ! has_key(it, '*')
-      return [2, 'no mime tail: ' . key[1] . ' or *']
+  let l:it = s:mimePrograms[l:key[0]]
+  if ! has_key(l:it, l:key[1])
+    if ! has_key(l:it, '*')
+      return [2, 'no mime tail: ' . l:key[1] . ' or *']
     endif
-    let it = it['*']
+    let l:it = l:it['*']
   else
-    let it = it[key[1]]
+    let l:it = l:it[l:key[1]]
   endif
-  if ! has_key(it, s:os)
+  if ! has_key(l:it, s:os)
     return [3, 'no OS key for ' . a:mimeType]
   endif
-  return [0, it[s:os]]
+  return [0, l:it[s:os]]
 endfun
 
 fun! s:GetMimePrograms(filename) abort
-  let mime = s:GetMimeType(a:filename)
-  return s:LookupMimeProgram(mime)
+  let l:mime = s:GetMimeType(a:filename)
+  return s:LookupMimeProgram(l:mime)
 endfun
 
 fun! s:OpenManHelpOrFileAndGoto(a) abort
-  let filename = s:NormalizePath(a:a[1])
-  let goto = a:a[2]
-  if len(filename) > 0
-    let helpOrMan = ''
-    if filename =~? '^man:'
+  let l:filename = s:NormalizePath(a:a[1])
+  let l:goto = a:a[2]
+  if len(l:filename) > 0
+    let l:helpOrMan = ''
+    if l:filename =~? '^man:'
       if ! exists(':Man')
         echoerr 'please enable :Man command with "runtime ftplugin/man.vim"'
         return
       endif
-      let page = strcharpart(filename, 4)
-      let helpOrMan = ':Man ' . page
-    elseif filename =~? '^help:'
-      let page = strcharpart(filename, 5)
+      let l:page = strcharpart(l:filename, 4)
+      let l:helpOrMan = ':Man ' . l:page
+    elseif l:filename =~? '^help:'
+      let l:page = strcharpart(l:filename, 5)
       if g:rel_open =~# 'tab'
-        let helpOrMan = ':tab help ' . page
+        let l:helpOrMan = ':tab help ' . l:page
       else
-        let helpOrMan = g:rel_modifiers . ' help ' . page
+        let l:helpOrMan = g:rel_modifiers . ' help ' . l:page
       endif
     endif
-    let frag = ''
-    if len(goto) > 0
-      let line = 1
-      let column = 1
-      let needle = ''
-      if goto[0] ==# ':' " Jump to position
-        let frag = ':'
-        let line = substitute(goto, '^:\?\(\d\+\).*$', '\1', 'e')
-        let column = substitute(goto, '^:\?\d\+:\(\d\+\).*$', '\1', 'e')
-        if len(line) == 0
-          let line = 1
+    let l:frag = ''
+    if len(l:goto) > 0
+      let l:line = 1
+      let l:column = 1
+      let l:needle = ''
+      if l:goto[0] ==# ':' " Jump to position
+        let l:frag = ':'
+        let l:line = substitute(l:goto, '^:\?\(\d\+\).*$', '\1', 'e')
+        let l:column = substitute(l:goto, '^:\?\d\+:\(\d\+\).*$', '\1', 'e')
+        if len(l:line) == 0
+          let l:line = 1
         endif
-        if len(column) == 0
-          let column = 1
+        if len(l:column) == 0
+          let l:column = 1
         endif
       else " Jump to regex
-        let frag = '/'
-        let needle = strcharpart(goto, 1)
-        if goto[0] !=# '/'
-          let needle = goto
+        let l:frag = '/'
+        let l:needle = strcharpart(l:goto, 1)
+        if l:goto[0] !=# '/'
+          let l:needle = l:goto
         endif
         " work around nvim bug: cannot handle funcref in substitution
         if has('nvim')
-          let needle = escape(s:ReplaceEscapes(needle), ' ')
+          let l:needle = escape(s:ReplaceEscapes(l:needle), ' ')
         else
-          let needle = escape(substitute(needle,
+          let l:needle = escape(substitute(l:needle,
                 \ '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g'), ' ')
         endif
       endif
     endif
-    let peditopen = ''
-    if ! empty(helpOrMan)
-      exe helpOrMan
+    let l:peditopen = ''
+    if ! empty(l:helpOrMan)
+      exe l:helpOrMan
       if exists('g:rel_test_mode')
         let g:rel_test_mode_result = 's:OpenManHelpOrFileAndGoto('
-              \ . string(a:a) . ') --> ' . helpOrMan
+              \ . string(a:a) . ') --> ' . l:helpOrMan
       endif
     else
       " jump to fragment in preview window
       if g:rel_open =~# '^:\?ped'
-        if frag ==# ':'
-          let peditopen = '+:' . line
-        elseif frag ==# '/'
-          let peditopen = '+:1/' . needle
+        if l:frag ==# ':'
+          let l:peditopen = '+:' . l:line
+        elseif l:frag ==# '/'
+          let l:peditopen = '+:1/' . l:needle
         endif
       endif
-      let exeCmd = ''
+      let l:exeCmd = ''
       if g:rel_open =~# 'tab'
-        let exeCmd = g:rel_open . ' ' . filename
+        let l:exeCmd = g:rel_open . ' ' . l:filename
       else
-        let exeCmd = g:rel_modifiers . ' ' . g:rel_open . ' ' . peditopen . ' ' . filename
+        let l:exeCmd = g:rel_modifiers . ' ' . g:rel_open . ' ' . l:peditopen . ' ' . l:filename
       endif
-      exe exeCmd
+      exe l:exeCmd
       if exists('g:rel_test_mode')
         let g:rel_test_mode_result = 's:OpenManHelpOrFileAndGoto('
-              \ . string(a:a) . ') --> ' . exeCmd
+              \ . string(a:a) . ') --> ' . l:exeCmd
       endif
     endif
     " no jump in preview window so place cursor in this window
-    if empty(peditopen)
-      if frag ==# ':'
-        call cursor(str2nr(line), str2nr(column))
+    if empty(l:peditopen)
+      if l:frag ==# ':'
+        call cursor(str2nr(l:line), str2nr(l:column))
         if exists('g:rel_test_mode')
-          let g:rel_test_mode_result .= ' ' . line . ':' . column
+          let g:rel_test_mode_result .= ' ' . l:line . ':' . l:column
         endif
-      elseif frag ==# '/'
+      elseif l:frag ==# '/'
         call cursor(1, 1)
-        call search(needle)
+        call search(l:needle)
         if exists('g:rel_test_mode')
-          let g:rel_test_mode_result .= ' ' . '/' . needle
+          let g:rel_test_mode_result .= ' ' . '/' . l:needle
         endif
       endif
     endif
     " Open folds if any
-    if ! empty(peditopen)
+    if ! empty(l:peditopen)
       wincmd P
       if &previewwindow
         silent! .foldopen
@@ -286,48 +286,48 @@ fun! s:OpenHttp(a)abort
 endfun
 
 fun! s:OpenFileExt(a) abort
-  let rel = a:a[1]
-  let ext = tolower(a:a[2])
-  if len(ext) == 0 || ! has_key(g:rel_extmap, ext)
+  let l:rel = a:a[1]
+  let l:ext = tolower(a:a[2])
+  if len(l:ext) == 0 || ! has_key(g:rel_extmap, l:ext)
     return a:a[0]
   endif
-  let job = g:rel_extmap[ext]
-  return s:RunJob(job, s:NormalizePath(a:a[1]))
+  let l:job = g:rel_extmap[l:ext]
+  return s:RunJob(l:job, s:NormalizePath(a:a[1]))
 endfun
 
 fun! s:OpenResolvedScheme(a) abort
   " echomsg 's:OpenResolvedScheme ' . string(a:a)
   if exists('g:rel_schemes') && has_key(g:rel_schemes, a:a[1])
-    let Resolved = g:rel_schemes[a:a[1]]
+    let l:Resolved = g:rel_schemes[a:a[1]]
     if empty(a:a[2]) && empty(a:a[3])
-      echomsg 'rel.vim: scheme ' . a:a[1] . ' is ' . string(Resolved)
+      echomsg 'rel.vim: scheme ' . a:a[1] . ' is ' . string(l:Resolved)
       return
     endif
-    if type(Resolved) == type('')
+    if type(l:Resolved) == type('')
       if len(a:a[2]) > 0
-        if stridx(Resolved, '%p') > -1
-          let Resolved = substitute(Resolved, '%p', a:a[2], 'g')
+        if stridx(l:Resolved, '%p') > -1
+          let l:Resolved = substitute(l:Resolved, '%p', a:a[2], 'g')
         else
           echoerr 'missing %p path in g:rel_schemes[' . a:a[1] . ']'
           return
         endif
       endif
       if len(a:a[3]) > 0
-        if stridx(Resolved, '%f') > -1
-          let Resolved = substitute(Resolved, '%f', a:a[3], 'g')
+        if stridx(l:Resolved, '%f') > -1
+          let l:Resolved = substitute(l:Resolved, '%f', a:a[3], 'g')
         else
-          let Resolved .= '#' . a:a[3]
+          let l:Resolved .= '#' . a:a[3]
         endif
       endif
-      return s:RelResolve(Resolved)
-    elseif type(Resolved) == type(funcref('s:OpenHttp'))
-      let res = call(Resolved, [a:a[0], a:a[2], a:a[3]])
-      if type(res) == type(0) && res == 0
+      return s:RelResolve(l:Resolved)
+    elseif type(l:Resolved) == type(funcref('s:OpenHttp'))
+      let l:res = call(l:Resolved, [a:a[0], a:a[2], a:a[3]])
+      if type(l:res) == type(0) && l:res == 0
         return a:a[0]
-      elseif res == 1
+      elseif l:res == 1
         call s:RelResolve(a:a[0])
-      elseif len(res) > 0
-        call s:RelResolve(res)
+      elseif len(l:res) > 0
+        call s:RelResolve(l:res)
       endif
       return 1
     endif
@@ -353,9 +353,9 @@ fun! s:RelResolve(token) abort
     echomsg 'rel.vim: recursed too deeply while resolving'
     return
   endif
-  for hdl in s:rel_handlers
-    let token2 = substitute(a:token, hdl[0], hdl[1], 'ie')
-    if token2 != a:token
+  for l:hdl in s:rel_handlers
+    let l:token2 = substitute(a:token, l:hdl[0], l:hdl[1], 'ie')
+    if l:token2 != a:token
       return
     endif
   endfor
@@ -363,10 +363,10 @@ endfun
 
 fun! rel#Rel(...) abort
   if ! empty(a:000)
-    let token = a:000[0]
-    if len(token) > 0
+    let l:token = a:000[0]
+    if len(l:token) > 0
       let s:RelResolveMaxIter = 5
-      call s:RelResolve(token)
+      call s:RelResolve(l:token)
     endif
   endif
 endfun
@@ -375,7 +375,6 @@ fun! rel#StunterTest() abort
   fun! s:SID() abort
     return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_SID$')
   endfun
-  let sid = s:SID()
   runtime stunter.vim
   return Stunter(s:SID())
 endfun
