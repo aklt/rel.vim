@@ -171,8 +171,11 @@ fun! s:GetMimePrograms(filename) abort
   return s:LookupMimeProgram(l:mime)
 endfun
 
-fun! s:OpenManHelpOrFileAndGoto(a) abort
+fun! s:OpenManHelpOrFileAndGoto(a) abort " (_, filename, goto)
   let l:filename = s:NormalizePath(a:a[1])
+  if l:filename[0] !=# '/'
+    let l:filename = expand('%:p:h') . '/' . l:filename
+  endif
   let l:goto = a:a[2]
   if len(l:filename) > 0
     let l:helpOrMan = ''
@@ -265,14 +268,16 @@ fun! s:OpenManHelpOrFileAndGoto(a) abort
       endif
     endif
     " Open folds if any
-    if ! empty(l:peditopen)
-      wincmd P
-      if &previewwindow
+    if foldlevel('.') > 0
+      if ! empty(l:peditopen)
+        wincmd P
+        if &previewwindow
+          silent! .foldopen
+        endif
+        wincmd p
+      else
         silent! .foldopen
       endif
-      wincmd p
-    else
-      silent! .foldopen
     endif
     return 1
   endif

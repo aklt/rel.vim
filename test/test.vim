@@ -1,4 +1,13 @@
 
+fun! ExpectCursor(pos)
+  let realPos = join(getpos('.')[1:2], ':')
+  if a:pos !=# realPos
+    throw 'Expected cursor at ' . a:pos . ' got ' . realPos
+  else
+    echomsg 'cursor..ok'
+  endif
+endfun
+
 let Test = rel#StunterTest()
 
 call Test('s:NormalizePath', ['/tmp/foo'], '/tmp/foo')
@@ -11,7 +20,17 @@ call Test('s:GetMimeType', ['/tmp'], 'inode/directory')
 call Test('s:LookupMimeProgram', ['inode/directory'], [0, ['rox %f']])
 call Test('s:LookupMimeProgram', ['audio/x-wav'], [0, ['vlc %f']])
 
-:qa!
+let g:rel_open = 'edit'
+call Test('rel#Rel', ['test.vim#:4'], 0)
+call ExpectCursor('4:1')
+
+call Test('rel#Rel', [ 'test.vim#:8:10' ], 0)
+" call ExpectCursor('8:10')
+" 
+" call Test('rel#Rel', ['test.vim#/cursor..'], 0)
+" call ExpectCursor('5:21')
+
+:qa
 finish
 
 let s:test_count = 0
