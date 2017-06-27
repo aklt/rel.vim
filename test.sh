@@ -4,6 +4,8 @@ dir=$(pwd)
 
 (cd ./test && for cmd in "vim --not-a-term" "nvim -n --headless"; do
   echo "running ${cmd}"
+  export ENV_VALUE1=100
+  export ENV_VALUE2=202
   ${cmd} --noplugin -u NONE \
     -c ':set nocp' \
     -c ':filetype plugin indent on' \

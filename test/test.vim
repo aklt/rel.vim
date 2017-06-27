@@ -15,6 +15,10 @@ call Test('s:NormalizePath', ['/tmp/foo'], '/tmp/foo')
 call Test('s:NormalizePath', ['/tmp/foo'], '/tmp/foo')
 call Test('s:NormalizePath', ['/tmp/%20foo'], '/tmp/\ foo')
 call Test('s:NormalizePath', ['~/%26foo'], $HOME . '/&foo')
+call Test('s:NormalizePath', ['$HOME/%26foo'], $HOME . '/&foo')
+call Test('s:NormalizePath', ['/%26-$ENV_VALUE1/foo'], '/&-100/foo')
+" Problem
+" call Test('s:NormalizePath', ['%24XX$ENV_VALUE1/foo'], '')
 
 echomsg 's:GetMimeType'
 call Test('s:GetMimeType', ['/tmp'], 'inode/directory')
@@ -25,26 +29,20 @@ call Test('s:LookupMimeProgram', ['audio/x-wav'], [0, ['vlc %f']])
 
 echomsg 'rel#Rel - various'
 let g:rel_open = 'edit'
-call Test('rel#Rel', ['test.vim#:4'], 0)
-call ExpectCursor('4:1')
-
-call Test('rel#Rel', [ 'test.vim#:7:10' ], 0)
-call ExpectCursor('7:10')
-
-call Test('rel#Rel', ['test.vim#/cursor..'], 0)
-call ExpectCursor('5:21')
-
-call Test('rel#Rel', ['"test.vim#/cursor.."'], 0)
-call ExpectCursor('5:21')
-
-call Test('rel#Rel', ['(<"test.vim#/cursor..">)'], 0)
-call ExpectCursor('5:21')
+call Test('rel#Rel', ['test.vim#:4'], 0, 'getcurpos()[1:2] == [4,1]')
+call Test('rel#Rel', [ 'test.vim#:7:10' ], 0, 'getcurpos()[1:2] == [7,10]')
+call Test('rel#Rel', ['test.vim#/cursor..'], 0, 'getcurpos()[1:2] == [5, 21]')
+call Test('rel#Rel', ['"test.vim#/cursor.."'], 0, 'getcurpos()[1:2] == [5, 21]')
+call Test('rel#Rel', ['(<"test.vim#/cursor..">)'], 0, 'getcurpos()[1:2] == [5,21]')
 
 echomsg 'rel#Rel - help:'
 call Test('rel#Rel', ['help:variables#/when%20compiled'], 0)
 
-echomsg 'rel#Rel - help:'
-call Test('rel#Rel', ['help:variables#/when%20compiled'], 0)
+if has('nvim')
+  call ExpectCursor('1296:59')
+else
+  call ExpectCursor('44:37')
+endif
 
 :qa
 finish
@@ -113,12 +111,6 @@ call ExpectCursor('9:5')
 
 :Rel help:variables#/when%20compiled
 call Expect("s:OpenManHelpOrFileAndGoto(['help:variables#/when%20compiled', 'help:variables', '/when%20compiled', '', '', '', '', '', '', '']) -->  help variables /when\\ compiled")
-
-if has('nvim')
-  " call ExpectCursor('1296:59')
-else
-  call ExpectCursor('44:37')
-endif
 
 let manVim = '/tmp/vim80/runtime/ftplugin/man.vim'
 if filereadable(manVim)

@@ -88,6 +88,7 @@ endif
 
 fun! s:NormalizePath(path) abort
   let l:res = substitute(a:path, '^\~', $HOME, 'e')
+  let l:res = expand(a:path)
   let l:res = substitute(l:res, '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g')
   return escape(l:res, ' ')
 endfun
@@ -233,6 +234,7 @@ fun! s:OpenManHelpOrFileAndGoto(a) abort " (_, filename, goto)
       if l:filename[0] !=# '/'
         let l:filename = expand('%:p:h') . '/' . l:filename
       endif
+      echomsg "FF " . l:filename
       " jump to fragment in preview window
       if g:rel_open =~# '^:\?ped'
         if l:frag ==# ':'

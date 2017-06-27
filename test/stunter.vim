@@ -8,38 +8,44 @@ if exists('g:stunter_version')
   finish
 endif
 let g:stunter_version = 'v0.1.0'
-let s:save_cpo = &cpo
-set cpo&vim
+let s:save_cpo = &cpoptions
+set cpoptions&vim
 
 scriptencoding utf-8
 
-fun! Stunter(sid)
+fun! Stunter(sid) " 'MethodName, args, expected[, expression]'
   let s:count = 0
   let s:sid = a:sid
   fun! s:StunterTest(...) abort " func, args...
-    if a:0 != 3
-      echoerr 'Usage :call StunterTest(subject, args, expected)'
-      finish
+    if !(a:0 == 3 || a:0 == 4)
+      echoerr 'Usage :call StunterTest(subject, args, expected[, expression])'
+      return
     endif
-    let funcName = a:000[0]
-    let callName = funcName
-    if funcName[0] ==# 's' && funcName[1] ==# ':'
-      let callName = '<SNR>' . s:sid . '_' . funcName[2:]
+    let l:funcName = a:000[0]
+    let l:callName = l:funcName
+    if l:funcName[0] ==# 's' && l:funcName[1] ==# ':'
+      let l:callName = '<SNR>' . s:sid . '_' . l:funcName[2:]
     endif
-    let Fn = funcref(callName)
-    let args = a:000[1]
-    let result = call(Fn, args)
+    let l:Fn = funcref(l:callName)
+    let l:args = a:000[1]
+    let l:result = call(l:Fn, l:args)
     let s:count += 1
-    let sres = string(result)
-    let sexp = string(a:000[2])
-    if sres == sexp
-      let fnargs = string(a:000[1])
-      let fnargs = strcharpart(fnargs, 1)
-      let fnargs = strcharpart(fnargs, 0, len(fnargs) - 1)
-      echomsg 'ok..' . s:count . '  ' . funcName . '(' . fnargs . ')' .
-            \ ' == ' . sexp
+    let l:sres = string(l:result)
+    let l:sexp = string(a:000[2])
+    if l:sres == l:sexp
+      let l:fnargs = string(a:000[1])
+      let l:fnargs = strcharpart(l:fnargs, 1)
+      let l:fnargs = strcharpart(l:fnargs, 0, len(l:fnargs) - 1)
+      echomsg 'ok..' . s:count . '  ' . l:funcName . '(' . l:fnargs . ')' .
+            \ ' == ' . l:sexp
     else
-      echoerr 'Error: expected ' . sres . ' to be ' . sexp
+      echoerr 'Error: expected ' . l:sres . ' to be ' . l:sexp
+    endif
+    if len(a:000) == 4
+      let l:eres = eval(a:000[3])
+      if !l:eres
+        echomsg 'Expected evaluation of ' . a:000[3] . ' to be truthy'
+      endif
     endif
   endfun
   return funcref('s:StunterTest')
@@ -47,5 +53,5 @@ endfun
 
 echomsg 'Loaded Stunter ' . g:stunter_version
 
-let &cpo = s:save_cpo
+let &cpoptions = s:save_cpo
 unlet s:save_cpo
