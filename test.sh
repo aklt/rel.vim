@@ -10,9 +10,9 @@ dir=$(pwd)
     -c ':set nocp' \
     -c ':filetype plugin indent on' \
     -c ':syntax on' \
-    -c ':let g:rel_test_mode = 1' \
     -c ":set rtp=${dir}/,${dir}/test" \
     -c ':set shortmess=aT' \
+    -c ':set cmdheight=18' \
     -c ":source ${dir}/plugin/rel.vim" \
     -c ":redir >> /tmp/rel.vim.test.$$.txt" \
     -c ':source ./test.vim' \

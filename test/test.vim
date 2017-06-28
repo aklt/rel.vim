@@ -33,7 +33,7 @@ call Test('rel#Rel', ['(<"test.vim#/cursor..">)'], 0, 'getcurpos()[1:2] == [5,21
 echomsg 'rel#Rel - help:'
 call Test('rel#Rel', ['help:variables#/when%20compiled'], 0, 'getcurpos()[1:2] == [1296,59]')
 
-if has('nvim')
+if !has('nvim')
   call ExpectCursor('1296:59')
 else
   call ExpectCursor('44:37')
