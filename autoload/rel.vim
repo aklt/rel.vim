@@ -234,7 +234,6 @@ fun! s:OpenManHelpOrFileAndGoto(a) abort " (_, filename, goto)
       if l:filename[0] !=# '/'
         let l:filename = expand('%:p:h') . '/' . l:filename
       endif
-      echomsg "FF " . l:filename
       " jump to fragment in preview window
       if g:rel_open =~# '^:\?ped'
         if l:frag ==# ':'
@@ -369,15 +368,66 @@ fun! s:RelResolve(token) abort
   endfor
 endfun
 
-fun! rel#Rel(...) abort
-  if ! empty(a:000)
-    let l:token = a:000[0]
-    if len(l:token) > 0
-      let l:token = substitute(l:token, '^[' . g:rel_chars_not_ok . ']\+\|' .
-            \ '[' . g:rel_chars_not_ok . ']\+$', '', 'g')
-      let s:RelResolveMaxIter = 5
-      call s:RelResolve(l:token)
+fun! s:MakeCharLookup(chars)
+  let l:res = []
+  let l:len = strchars(a:chars)
+  let l:i = 0
+  while l:i < 256
+    call add(l:res, 0)
+    let l:i = l:i + 1
+  endwhile
+
+  let l:i = 0
+  while l:i < l:len
+    let l:val = char2nr(strcharpart(a:chars, l:i, 1))
+    if l:val < 256
+      let l:res[l:val] = 1
     endif
+    let l:i = l:i + 1
+  endwhile
+  return join(l:res, '')
+endfun
+
+let s:lookup = s:MakeCharLookup(g:rel_http_chars)
+
+fun! s:TokenAtCursor(line, cpos)
+  let l:line = map(split(a:line, '\zs'), {i, c -> char2nr(c)})
+  let l:last = len(a:line)
+  
+  let l:b = a:cpos
+  let l:e = a:cpos
+
+  let l:bok = 1
+  let l:eok = 1
+
+  while l:bok || l:eok
+    if l:bok && l:b >= 0 && l:line[l:b] < 256 && s:lookup[l:line[l:b]] == '1'
+      let l:b = l:b - 1
+    else
+      let l:bok = 0
+    endif
+
+    if l:eok && l:e < l:last && l:line[l:e] < 256 && s:lookup[l:line[l:e]] == '1'
+      let l:e = l:e + 1
+    else
+      let l:eok = 0
+    endif
+  endwhile
+  return strcharpart(a:line, l:b, l:e - l:b)
+endfun
+
+fun! rel#Rel(...) abort
+  let l:token = ''
+  if empty(a:000)
+    let l:pos = getcurpos()
+    let l:line = getline('.')
+    let l:token = s:TokenAtCursor(l:pos[1])
+  else
+    let l:token = a:000[0]
+  endif
+  if len(l:token) > 0
+    let s:RelResolveMaxIter = 5
+    call s:RelResolve(l:token)
   endif
 endfun
 

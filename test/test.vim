@@ -17,15 +17,10 @@ call Test('s:NormalizePath', ['/tmp/%20foo'], '/tmp/\ foo')
 call Test('s:NormalizePath', ['~/%26foo'], $HOME . '/&foo')
 call Test('s:NormalizePath', ['$HOME/%26foo'], $HOME . '/&foo')
 call Test('s:NormalizePath', ['/%26-$ENV_VALUE1/foo'], '/&-100/foo')
-" Problem
+" FIXME Problem
 " call Test('s:NormalizePath', ['%24XX$ENV_VALUE1/foo'], '')
 
-echomsg 's:GetMimeType'
-call Test('s:GetMimeType', ['/tmp'], 'inode/directory')
-
-echomsg 's:LookupMimeProgram'
-call Test('s:LookupMimeProgram', ['inode/directory'], [0, ['rox %f']])
-call Test('s:LookupMimeProgram', ['audio/x-wav'], [0, ['vlc %f']])
+echomsg 's:TokenAtCursor'
 
 echomsg 'rel#Rel - various'
 let g:rel_open = 'edit'
@@ -36,13 +31,21 @@ call Test('rel#Rel', ['"test.vim#/cursor.."'], 0, 'getcurpos()[1:2] == [5, 21]')
 call Test('rel#Rel', ['(<"test.vim#/cursor..">)'], 0, 'getcurpos()[1:2] == [5,21]')
 
 echomsg 'rel#Rel - help:'
-call Test('rel#Rel', ['help:variables#/when%20compiled'], 0)
+call Test('rel#Rel', ['help:variables#/when%20compiled'], 0, 'getcurpos()[1:2] == [1296,59]')
 
 if has('nvim')
   call ExpectCursor('1296:59')
 else
   call ExpectCursor('44:37')
 endif
+
+" Later
+echomsg 's:GetMimeType'
+call Test('s:GetMimeType', ['/tmp'], 'inode/directory')
+
+echomsg 's:LookupMimeProgram'
+call Test('s:LookupMimeProgram', ['inode/directory'], [0, ['rox %f']])
+call Test('s:LookupMimeProgram', ['audio/x-wav'], [0, ['vlc %f']])
 
 :qa
 finish
