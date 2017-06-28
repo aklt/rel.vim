@@ -41,8 +41,8 @@ if ! exists('g:rel_schemes')
   let g:rel_schemes = {}
 endif
 
-let g:rel_chars_not_ok = ' \t()"<>' . "'"
-let g:rel_http_chars = '!#$%&*+,-./01234567899:;=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~'
+let g:rel_chars_not_ok = ' ,!\t()"<>' . "'"
+let g:rel_link_chars = '#$%&*+-./01234567899:=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ\\_abcdefghijklmnopqrstuvwxyz~'
 
 if g:rel_highlight > 0
   hi link xREL htmlLink
@@ -51,7 +51,7 @@ if g:rel_highlight > 0
       \ '\):[^' . g:rel_chars_not_ok . ']\+\)',
       \ '\%([^' . g:rel_chars_not_ok . ']\+\.\%(' . join(keys(g:rel_extmap), '\|') . '\)\)',
       \ '[^' . g:rel_chars_not_ok . ']\+#[\/:][^' . g:rel_chars_not_ok . ']\+',
-      \ '\%(http\|ftp\)s\?:\/\/[' . g:rel_http_chars . ']\+',
+      \ '\%(http\|ftp\)s\?:\/\/[' . g:rel_link_chars . ']\+',
       \ '\%(^\|[' . g:rel_chars_not_ok . ']\)\zs\%(\.\.\|\.\|\~\|\w\+\)\?\/\/\@!\f[^' .
       \ g:rel_chars_not_ok . ']*'
       \ ]
@@ -66,7 +66,7 @@ endif
 
 if ! hasmapto('<Plug>(Rel)')
   nmap <unique> <C-k> <Plug>(Rel)
-  nmap <LeftMouse> <Plug>(Rel)
+  nmap <C-LeftMouse> <Plug>(Rel)
 endif
 
 nnoremap <Plug>(Rel) :call rel#Rel(expand('<cWORD>'))<CR>

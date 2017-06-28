@@ -345,7 +345,7 @@ endfun
 let s:rel_handlers = [
       \ [ '^\(\w\+\):\([^#]*\)\%(#\(\%(\/\|:\)\S\+\)\)\?',
       \  funcref('s:OpenResolvedScheme')],
-      \ [ '\(\%(http\|ftp\)s\?:\/\/[' . g:rel_http_chars . ']\+\)',
+      \ [ '\(\%(http\|ftp\)s\?:\/\/[' . g:rel_link_chars . ']\+\)',
       \  funcref('s:OpenHttp') ],
       \ [ '^\(\S\+\.\(\w\+\)\)$', funcref('s:OpenFileExt') ],
       \ [ '^\%(file:\/\/\)\?\([^#]\+\)\%(#\(\%(\/\|:\)\S\+\)\)\?',
@@ -388,7 +388,7 @@ fun! s:MakeCharLookup(chars)
   return join(l:res, '')
 endfun
 
-let s:lookup = s:MakeCharLookup(g:rel_http_chars)
+let s:lookup = s:MakeCharLookup(g:rel_link_chars)
 
 fun! s:TokenAtCursor(line, cpos)
   let l:line = map(split(a:line, '\zs'), {i, c -> char2nr(c)})
@@ -396,7 +396,6 @@ fun! s:TokenAtCursor(line, cpos)
   
   let l:b = a:cpos
   let l:e = a:cpos
-
   let l:bok = 1
   let l:eok = 1
 
@@ -404,6 +403,9 @@ fun! s:TokenAtCursor(line, cpos)
     if l:bok && l:b >= 0 && l:line[l:b] < 256 && s:lookup[l:line[l:b]] == '1'
       let l:b = l:b - 1
     else
+      if l:bok && l:b >= 0
+        let l:b += 1
+      endif
       let l:bok = 0
     endif
 

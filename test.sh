@@ -12,7 +12,7 @@ dir=$(pwd)
     -c ':syntax on' \
     -c ":set rtp=${dir}/,${dir}/test" \
     -c ':set shortmess=aT' \
-    -c ':set cmdheight=18' \
+    -c ':set cmdheight=28' \
     -c ":source ${dir}/plugin/rel.vim" \
     -c ":redir >> /tmp/rel.vim.test.$$.txt" \
     -c ':source ./test.vim' \

@@ -21,21 +21,26 @@ call Test('s:NormalizePath', ['/%26-$ENV_VALUE1/foo'], '/&-100/foo')
 " call Test('s:NormalizePath', ['%24XX$ENV_VALUE1/foo'], '')
 
 echomsg 's:TokenAtCursor'
+call Test('s:TokenAtCursor', ['stunter.vim#:2', 0], 'stunter.vim#:2')
+call Test('s:TokenAtCursor', ['stunter.vim#:2', 1], 'stunter.vim#:2')
+call Test('s:TokenAtCursor', [' stunter.vim#:2', 0], '')
+call Test('s:TokenAtCursor', ['<<stunter.vim#:2>>', 3], 'stunter.vim#:2')
+call Test('s:TokenAtCursor', ['<<<<stunter.vim#:2>>>>', 3], '')
+call Test('s:TokenAtCursor', ['<stunter.vim#:2>', 14], 'stunter.vim#:2')
+call Test('s:TokenAtCursor', ['<stunter.vim#:2>', 15], '')
 
 echomsg 'rel#Rel - various'
 let g:rel_open = 'edit'
-call Test('rel#Rel', ['test.vim#:4'], 0, 'getcurpos()[1:2] == [4,1]')
-call Test('rel#Rel', [ 'test.vim#:7:10' ], 0, 'getcurpos()[1:2] == [7,10]')
-call Test('rel#Rel', ['test.vim#/cursor..'], 0, 'getcurpos()[1:2] == [5, 21]')
-call Test('rel#Rel', ['"test.vim#/cursor.."'], 0, 'getcurpos()[1:2] == [5, 21]')
-call Test('rel#Rel', ['(<"test.vim#/cursor..">)'], 0, 'getcurpos()[1:2] == [5,21]')
+call Test('rel#Rel', ['stunter.vim#:4'], 0, 'getcurpos()[1:2] == [4,1]')
+call Test('rel#Rel', [ 'stunter.vim#:7:10' ], 0, 'getcurpos()[1:2] == [7,10]')
+call Test('rel#Rel', ['stunter.vim#/cursor..'], 0, 'getcurpos()[1:2] == [5, 21]')
+call Test('rel#Rel', ['"stunter.vim#/cursor.."'], 0, 'getcurpos()[1:2] == [5, 21]')
+call Test('rel#Rel', ['(<"stunter.vim#/cursor..">)'], 0, 'getcurpos()[1:2] == [5,21]')
 
 echomsg 'rel#Rel - help:'
-call Test('rel#Rel', ['help:variables#/when%20compiled'], 0, 'getcurpos()[1:2] == [1296,59]')
+call Test('rel#Rel', ['help:variables#/when%20compiled'], 0)
 
 if !has('nvim')
-  call ExpectCursor('1296:59')
-else
   call ExpectCursor('44:37')
 endif
 
