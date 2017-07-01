@@ -69,7 +69,7 @@ if ! hasmapto('<Plug>(Rel)')
   nmap <C-LeftMouse> <Plug>(Rel)
 endif
 
-nnoremap <Plug>(Rel) :call rel#Rel(expand('<cWORD>'))<CR>
+nnoremap <Plug>(Rel) :call rel#Rel()<CR>
 command! -nargs=* Rel call rel#Rel(<f-args>)
 
 let &cpoptions= s:keepcpo

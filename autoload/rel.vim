@@ -38,54 +38,6 @@ if ! exists('g:rel_http')
   let g:rel_http = 'firefox %s'
 endif
 
-let s:default_mime_programs = {
-      \   'application': {
-      \     'vnd.ms-excel': {
-      \       'unix': ['gnumeric %f'],
-      \       'win32': ['excel %f']
-      \     },
-      \     'x-gnumeric': {
-      \       'unix': ['gnumeric %f'],
-      \       'win32': ['gnumeric %f']
-      \     }
-      \   },
-      \   'audio': {
-      \     '*': {
-      \       'unix': ['vlc %f'],
-      \       'win32': ['TODO %f']
-      \     },
-      \     'mpeg': {
-      \       'unix': ['clementine %']
-      \     }
-      \   },
-      \   'image': {
-      \     '*': {
-      \       'unix':  ['geeqie %f', 'eog %f', 'gimp %f'],
-      \       'win32': ['adcdc']
-      \     },
-      \     'gif': {
-      \       'unix': ['imv %f', 'geeqie %f']
-      \     }
-      \   },
-      \   'inode': {
-      \     'directory': {
-      \       'unix': ['rox %f']
-      \     }
-      \   },
-      \   'video': {
-      \     '*': {
-      \       'unix': ['vlc %f'],
-      \       'win32': ['vlc %f']
-      \     }
-      \   }
-      \ }
-
-if exists('g:rel_mime_programs')
-  let s:mimePrograms = extend(s:default_mime_programs, g:rel_mime_programs)
-else
-  let s:mimePrograms = s:default_mime_programs
-endif
-
 fun! s:NormalizePath(path) abort
   let l:res = substitute(a:path, '^\~', $HOME, 'e')
   let l:res = expand(a:path)
@@ -103,73 +55,6 @@ fun! s:RunJob(cmd, arg) abort
         \ 'in_io': 'null',
         \ 'out_io': 'null'
         \ })
-  if exists('g:rel_test_mode')
-    let g:rel_test_mode_result = 's:RunJob(' . l:job . ')'
-  endif
-endfun
-
-" Run one of the shell commands replacing %f with the file name and  continuing
-" until one of the succeeds.
-"
-" Returns [0, [cmd output]] on success and
-"         [errCode, [error], errCode, [error], ...] on failure
-fun! s:RunOneOf (commands, filename) abort
-  let l:out = ''
-  let l:res = []
-  for l:p in a:commands
-    let l:cmd = substitute(l:p, '%f', a:filename, 'g')
-    let l:out = systemlist(l:cmd)
-    if v:shell_error == 0
-      return [0, l:out]
-    else
-      call add(l:res, v:shell_error)
-      call add(l:res, l:out)
-    endif
-  endfor
-  return l:res
-endfun
-
-fun! s:GetMimeType (filename) abort
-  let l:res = system('file --mime-type ' . a:filename)
-  if v:shell_error == 0
-    let l:mime = substitute(l:res, '^[^:]\+:\s*\|\n$', '', 'gm')
-    return l:mime
-  endif
-endfun
-
-let s:os = 'unix'
-
-if has('macunix')
-  let s:os = 'macunix'
-elseif has('win32')
-  let s:os = 'win32'
-elseif has('win32unix')
-  let s:os = 'win32unix'
-endif
-
-fun! s:LookupMimeProgram (mimeType) abort
-  let l:key = split(a:mimeType, '/')
-  if ! has_key(s:mimePrograms, l:key[0])
-    return [1, 'no mime head: ' . l:key[0]]
-  endif
-  let l:it = s:mimePrograms[l:key[0]]
-  if ! has_key(l:it, l:key[1])
-    if ! has_key(l:it, '*')
-      return [2, 'no mime tail: ' . l:key[1] . ' or *']
-    endif
-    let l:it = l:it['*']
-  else
-    let l:it = l:it[l:key[1]]
-  endif
-  if ! has_key(l:it, s:os)
-    return [3, 'no OS key for ' . a:mimeType]
-  endif
-  return [0, l:it[s:os]]
-endfun
-
-fun! s:GetMimePrograms(filename) abort
-  let l:mime = s:GetMimeType(a:filename)
-  return s:LookupMimeProgram(l:mime)
 endfun
 
 fun! s:OpenManHelpOrFileAndGoto(a) abort " (_, filename, goto)
@@ -225,10 +110,6 @@ fun! s:OpenManHelpOrFileAndGoto(a) abort " (_, filename, goto)
     let l:peditopen = ''
     if ! empty(l:helpOrMan)
       exe l:helpOrMan
-      if exists('g:rel_test_mode')
-        let g:rel_test_mode_result = 's:OpenManHelpOrFileAndGoto('
-              \ . string(a:a) . ') --> ' . l:helpOrMan
-      endif
     else
       " Give files an absolute path
       if l:filename[0] !=# '/'
@@ -249,24 +130,14 @@ fun! s:OpenManHelpOrFileAndGoto(a) abort " (_, filename, goto)
         let l:exeCmd = g:rel_modifiers . ' ' . g:rel_open . ' ' . l:peditopen . ' ' . l:filename
       endif
       exe l:exeCmd
-      if exists('g:rel_test_mode')
-        let g:rel_test_mode_result = 's:OpenManHelpOrFileAndGoto('
-              \ . string(a:a) . ') --> ' . l:exeCmd
-      endif
     endif
     " no jump in preview window so place cursor in this window
     if empty(l:peditopen)
       if l:frag ==# ':'
         call cursor(str2nr(l:line), str2nr(l:column))
-        if exists('g:rel_test_mode')
-          let g:rel_test_mode_result .= ' ' . l:line . ':' . l:column
-        endif
       elseif l:frag ==# '/'
         call cursor(1, 1)
         call search(l:needle)
-        if exists('g:rel_test_mode')
-          let g:rel_test_mode_result .= ' ' . '/' . l:needle
-        endif
       endif
     endif
     " Open folds if any
@@ -393,7 +264,7 @@ let s:lookup = s:MakeCharLookup(g:rel_link_chars)
 fun! s:TokenAtCursor(line, cpos)
   let l:line = map(split(a:line, '\zs'), {i, c -> char2nr(c)})
   let l:last = len(a:line)
-  
+
   let l:b = a:cpos
   let l:e = a:cpos
   let l:bok = 1
@@ -423,11 +294,12 @@ fun! rel#Rel(...) abort
   if empty(a:000)
     let l:pos = getcurpos()
     let l:line = getline('.')
-    let l:token = s:TokenAtCursor(l:pos[1])
+    let l:token = s:TokenAtCursor(l:line, l:pos[2])
   else
     let l:token = a:000[0]
   endif
   if len(l:token) > 0
+    echomsg 'Token "' . l:token . '"'
     let s:RelResolveMaxIter = 5
     call s:RelResolve(l:token)
   endif
