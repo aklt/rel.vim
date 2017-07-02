@@ -45,12 +45,14 @@ if !has('nvim')
 endif
 
 " Later
-echomsg 's:GetMimeType'
-call Test('s:GetMimeType', ['/tmp'], 'inode/directory')
+if 0
+  echomsg 's:GetMimeType'
+  call Test('s:GetMimeType', ['/tmp'], 'inode/directory')
 
-echomsg 's:LookupMimeProgram'
-call Test('s:LookupMimeProgram', ['inode/directory'], [0, ['rox %f']])
-call Test('s:LookupMimeProgram', ['audio/x-wav'], [0, ['vlc %f']])
+  echomsg 's:LookupMimeProgram'
+  call Test('s:LookupMimeProgram', ['inode/directory'], [0, ['rox %f']])
+  call Test('s:LookupMimeProgram', ['audio/x-wav'], [0, ['vlc %f']])
+endif
 
 :qa
 finish

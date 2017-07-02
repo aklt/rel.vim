@@ -13,10 +13,17 @@ set cpoptions&vim
 
 scriptencoding utf-8
 
-fun! Stunter(sid) " 'MethodName, args, expected[, expression]'
+fun! Stunter(...) " sid[, verbose]
+  let s:sid = 0
+  let s:verbose = 0
+  if a:0 > 0
+    let s:sid = a:000[0]
+  endif
+  if a:0 > 1
+    let s:verbose = 1
+  endif
   let s:count = 0
-  let s:sid = a:sid
-  fun! s:StunterTest(...) abort " func, args...
+  fun! s:StunterTest(...) abort " 'MethodName, args, expected[, expression]'
     if !(a:0 == 3 || a:0 == 4)
       echoerr 'Usage :call StunterTest(subject, args, expected[, expression])'
       return
@@ -33,11 +40,13 @@ fun! Stunter(sid) " 'MethodName, args, expected[, expression]'
     let l:sres = string(l:result)
     let l:sexp = string(a:000[2])
     if l:sres == l:sexp
-      let l:fnargs = string(a:000[1])
-      let l:fnargs = strcharpart(l:fnargs, 1)
-      let l:fnargs = strcharpart(l:fnargs, 0, len(l:fnargs) - 1)
-      echomsg 'ok..' . s:count . '  ' . l:funcName . '(' . l:fnargs . ')' .
-            \ ' == ' . l:sexp
+      if s:verbose
+        let l:fnargs = string(a:000[1])
+        let l:fnargs = strcharpart(l:fnargs, 1)
+        let l:fnargs = strcharpart(l:fnargs, 0, len(l:fnargs) - 1)
+        echomsg 'ok..' . s:count . '  ' . l:funcName . '(' . l:fnargs . ')' .
+              \ ' == ' . l:sexp
+      endif
     else
       echoerr 'Error: expected ' . l:sres . ' to be ' . l:sexp
     endif

@@ -299,7 +299,6 @@ fun! rel#Rel(...) abort
     let l:token = a:000[0]
   endif
   if len(l:token) > 0
-    echomsg 'Token "' . l:token . '"'
     let s:RelResolveMaxIter = 5
     call s:RelResolve(l:token)
   endif
