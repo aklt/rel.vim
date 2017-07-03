@@ -32,10 +32,11 @@ call Test('s:TokenAtCursor', ['<stunter.vim#:2>', 15], '')
 echomsg 'rel#Rel - various'
 let g:rel_open = 'edit'
 call Test('rel#Rel', ['stunter.vim#:4'], 0, 'getcurpos()[1:2] == [4,1]')
-call Test('rel#Rel', [ 'stunter.vim#:7:10' ], 0, 'getcurpos()[1:2] == [7,10]')
-call Test('rel#Rel', ['stunter.vim#/cursor..'], 0, 'getcurpos()[1:2] == [5, 21]')
-call Test('rel#Rel', ['"stunter.vim#/cursor.."'], 0, 'getcurpos()[1:2] == [5, 21]')
-call Test('rel#Rel', ['(<"stunter.vim#/cursor..">)'], 0, 'getcurpos()[1:2] == [5,21]')
+call Test('rel#Rel', [ 'stunter.vim#:7:10' ], 0, 'getcurpos()[1:2] == [7, 10]')
+call Test('rel#Rel', [ '<<stunter.vim#:26:20>>', 3], 0, 'getcurpos()[1:2] == [26, 20]')
+call Test('rel#Rel', ['stunter.vim#/g:stunter', 3], 0, 'getcurpos()[1:2] == [7, 12]')
+call Test('rel#Rel', ['"stunter.vim#/g:stunter"', 3], 0, 'getcurpos()[1:2] == [7, 12]')
+call Test('rel#Rel', ['(<"stunter.vim#/g:stunter">)', 3], 0, 'getcurpos()[1:2] == [7, 12]')
 
 echomsg 'rel#Rel - help:'
 call Test('rel#Rel', ['help:variables#/when%20compiled'], 0)

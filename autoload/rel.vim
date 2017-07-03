@@ -291,13 +291,17 @@ endfun
 
 fun! rel#Rel(...) abort
   let l:token = ''
+  let l:column = 1
   if empty(a:000)
-    let l:pos = getcurpos()
     let l:line = getline('.')
-    let l:token = s:TokenAtCursor(l:line, l:pos[2])
+    let l:column = getcurpos()[2]
   else
-    let l:token = a:000[0]
+    let l:line = a:000[0]
+    if a:0 > 1
+      let l:column = a:000[1]
+    endif
   endif
+  let l:token = s:TokenAtCursor(l:line, l:column)
   if len(l:token) > 0
     let s:RelResolveMaxIter = 5
     call s:RelResolve(l:token)
