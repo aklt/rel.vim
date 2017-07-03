@@ -11,10 +11,9 @@ DESCRIPTION                                               *rel-description* *rel
 
 Press `<C-k>` in normal mode to follow the link under the cursor.  If the link
 begins with a `scheme:` it will be resolved to determine how to open the link.
-If a link ends in a known suffix it will be opened by the mapping to a known
-program.  Also, link opened in vim may contain a fragment part to determine
-where to place the cursor in the newly opened file.
-
+If a link ends in a known suffix it will be opened by the associated program.
+Links opened in vim may contain a fragment part to determine where to place
+the cursor in the newly opened file.
                                                            *rel-rels* *rel-links*
 RELs ~
 
@@ -30,23 +29,27 @@ Fragments ~
 Links to text files opened in vim may be suffixed with a fragment part that
 determines where to place the cursor in the newly opened buffer.
 
-A Line fragment (`#:<number>`) places the cursor at a specific line.  A search
-fragment (`#/<text>`) finds a text in the opened file to place the cursor
-over.
+A Line fragment (`#:<line>[:<column>]`) places the cursor on a specific
+line and optionally in a specific column. A search fragment (`#/<text>`) finds
+a text in the opened file to place the cursor over.
 
-For example:
+For example the link: >
 
         ~/.vimrc#:10
+<
+will place the cursor on line 10 of the `$HOME/.vimrc` file and >
 
-will place the cursor on line 10 of the `$HOME/.vimrc` file and
+        ~/.vimrc#:10:4
+<
+will place the cursor on line 10 column 4.  The text fragment >
 
         ~/.vimrc#/set
-
-will place the cursor at the first occurrence of the string "set" in this
-file.
+<
+will place the cursor at the first occurrence of the string "set" in the
+`.vimrc` file.
 
 Note that fragments function only for text files opened in vim and for the
-built in `help:` of `man:` schemes.
+built in `help:` and `man:` schemes.
                                                                    *rel-suffix*
 Suffixes ~
 
