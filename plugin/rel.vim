@@ -42,7 +42,7 @@ if ! exists('g:rel_schemes')
 endif
 
 let g:rel_chars_not_ok = ' ,!\t()"<>' . "'"
-let g:rel_link_chars = '#$%&*+-./01234567899:=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ\\_abcdefghijklmnopqrstuvwxyz~'
+let g:rel_link_chars = '#$%&*+-./01234567899:=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ\\^_abcdefghijklmnopqrstuvwxyz~'
 
 if g:rel_highlight > 0
   hi link xREL htmlLink

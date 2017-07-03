@@ -3,8 +3,6 @@ fun! ExpectCursor(pos)
   let l:realPos = join(getpos('.')[1:2], ':')
   if a:pos !=# l:realPos
     throw 'Expected cursor at ' . a:pos . ' got ' . l:realPos
-  else
-    echomsg 'cursor..ok'
   endif
 endfun
 
@@ -32,11 +30,27 @@ call Test('s:TokenAtCursor', ['<stunter.vim#:2>', 15], '')
 echomsg 'rel#Rel - various'
 let g:rel_open = 'edit'
 call Test('rel#Rel', ['stunter.vim#:4'], 0, 'getcurpos()[1:2] == [4,1]')
-call Test('rel#Rel', [ 'stunter.vim#:7:10' ], 0, 'getcurpos()[1:2] == [7, 10]')
-call Test('rel#Rel', [ '<<stunter.vim#:26:20>>', 3], 0, 'getcurpos()[1:2] == [26, 20]')
+call Test('rel#Rel', ['stunter.vim#:7:10'], 0, 'getcurpos()[1:2] == [7, 10]')
+call Test('rel#Rel', ['<<stunter.vim#:26:20>>', 3], 0, 'getcurpos()[1:2] == [26, 20]')
 call Test('rel#Rel', ['stunter.vim#/g:stunter', 3], 0, 'getcurpos()[1:2] == [7, 12]')
 call Test('rel#Rel', ['"stunter.vim#/g:stunter"', 3], 0, 'getcurpos()[1:2] == [7, 12]')
 call Test('rel#Rel', ['(<"stunter.vim#/g:stunter">)', 3], 0, 'getcurpos()[1:2] == [7, 12]')
+
+let g:rel_open = 'pedit'
+call Test('rel#Rel', ['stunter.vim#:40'], 0)
+wincmd P
+call ExpectCursor('40:5')
+wincmd p
+
+call Test('rel#Rel', ['stunter.vim#/echoms'], 0)
+wincmd P
+call ExpectCursor('47:9')
+wincmd p
+
+call Test('rel#Rel', ['stunter.vim#/^\w'], 0)
+wincmd P
+call ExpectCursor('7:1')
+wincmd p
 
 echomsg 'rel#Rel - help:'
 call Test('rel#Rel', ['help:variables#/when%20compiled'], 0)

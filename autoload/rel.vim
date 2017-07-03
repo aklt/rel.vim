@@ -100,10 +100,10 @@ fun! s:OpenManHelpOrFileAndGoto(a) abort " (_, filename, goto)
         endif
         " work around nvim bug: cannot handle funcref in substitution
         if has('nvim')
-          let l:needle = escape(s:ReplaceEscapes(l:needle), ' ')
+          let l:needle = escape(s:ReplaceEscapes(l:needle), ' \\')
         else
           let l:needle = escape(substitute(l:needle,
-                \ '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g'), ' ')
+                \ '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g'), ' \\')
         endif
       endif
     endif
@@ -302,6 +302,7 @@ fun! rel#Rel(...) abort
     endif
   endif
   let l:token = s:TokenAtCursor(l:line, l:column)
+  " echomsg 'Token ' . l:token
   if len(l:token) > 0
     let s:RelResolveMaxIter = 5
     call s:RelResolve(l:token)
