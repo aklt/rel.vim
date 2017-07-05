@@ -1,4 +1,4 @@
-*rel.txt*         Define and follow links to resources with                 *Rel*
+*rel.txt*         Define and follow links to resources with              *Rel*
 ==============================================================================
                 _____  _____  ____     __ __  ___  __  __                    ~
                /  _  \/   __\/  _/    /  |  \/___\/  \/  \                   ~
@@ -7,14 +7,14 @@
                                  Resource Linking for Vim                    ~
 =================================================================== v0.2.2 ===
 
-DESCRIPTION                                               *rel-description* *rel*
+DESCRIPTION                                                  *rel-description*
 
 Press `<C-k>` in normal mode to follow the link under the cursor.  If the link
 begins with a `scheme:` it will be resolved to determine how to open the link.
 If a link ends in a known suffix it will be opened by the associated program.
 Links opened in vim may contain a fragment part to determine where to place
 the cursor in the newly opened file.
-                                                           *rel-rels* *rel-links*
+                                                                   *rel-links*
 RELs ~
 
 The links that `rel.vim` uses consist of only non-whitespace characters except
@@ -23,7 +23,7 @@ include a space character in a link you can use `%20`.
 
 If the tilde `~` character appears at the beginning of a link it is expanded
 to the value of `$HOME`.
-                                                                *rel-fragments*
+                                                               *rel-fragments*
 Fragments ~
 
 Links to text files opened in vim may be suffixed with a fragment part that
@@ -50,13 +50,13 @@ will place the cursor at the first occurrence of the string "set" in the
 
 Note that fragments function only for text files opened in vim and for the
 built in `help:` and `man:` schemes.
-                                                                   *rel-suffix*
+                                                                  *rel-suffix*
 Suffixes ~
 
 A map between a suffix and a program can be defined in |g:rel_extmap| to
 determine which program to use to open links with a specific suffix.
 
-                                                                  *rel-schemes*
+                                                                 *rel-schemes*
 Schemes ~
 
 This plugin defines 2 special schemes, `help:` to lookup vim help files and
@@ -78,9 +78,9 @@ command in |g:rel_http| will be run, passing the url to open it.
 
 See |g:rel_schemes| on how to define more schemes.
 
-CONFIGURATION                                                      *rel-config*
+CONFIGURATION                                                     *rel-config*
 
-                                                                      *rel-map*
+                                                                     *rel-map*
 Map ~
 
 You can map a key combination of your liking to `<Plug>(Rel)` to follow a
@@ -88,7 +88,7 @@ link.  If no map exists the default is: >
 
         :nmap <C-k> <Plug>(Rel)
 <
-                                                                   *g:rel_http*
+                                                                  *g:rel_http*
 Http browser ~
 
 Change the program to run when opening an `http` or `https` URL: >
@@ -97,7 +97,7 @@ Change the program to run when opening an `http` or `https` URL: >
 <
 The string `%s` will be replaced with the link.
 
-                                                                   *g:rel_open*
+                                                                  *g:rel_open*
 Opening a buffer ~
 
 Change `g:rel_open` to determine how a buffer should be opened when following
@@ -109,12 +109,12 @@ Set this to one of the vim commands used to open a file: |:tabnew|, |:vsplit|,
 |:split|.  Note that this does not affect how `man:` links are opened.  See
 |:Man| on how to change how the buffer for man pages is opened.
 
-                                                              *g:rel_modifiers*
+                                                             *g:rel_modifiers*
 
 The value of `g:rel_modifiers` determines how to open a buffer when
 `g:rel_open` is not |:tabnew|.  For possible values, see |:vert|.
 
-                                                                 *g:rel_extmap*
+                                                                *g:rel_extmap*
 External programs ~
 
 You can define a dictionary of extensions mapping to programs to determine how
@@ -126,7 +126,7 @@ files with this suffix should be opened.  The default value is: >
 <
 In the rhs of these maps `%s` will be replaced with the link to the file.
 
-                                                                *g:rel_schemes*
+                                                               *g:rel_schemes*
 Custom schemes ~
 
 The variable `g:rel_schemes` may contain a mapping between a scheme and a
@@ -158,8 +158,8 @@ If the value in the `g:rel_schemes` dictionary is a |Funcref| then it is
 called with a List of `[full_link, path_part, fragment_part]` and what this
 function returns will determines what will happen.  Returning
 
-- `"a string"` will cause this string to be passed to each of the known methods
-  for opening links, possibly opening the link.
+- `"a string"` will cause this string to be passed to each of the known 
+  methods for opening links, possibly opening the link.
 
 - the value `1` indicates that the function has opened the link and no further
   methods will be tried.
@@ -169,7 +169,7 @@ function returns will determines what will happen.  Returning
 
 TODO Add an example
 
-                                                              *g:rel_highlight*
+                                                             *g:rel_highlight*
 Syntax highlight links ~
 
 Set this to a value above 0 to get syntax highlighting of text that looks like
@@ -200,7 +200,7 @@ link by setting >
 <
 The default is a value of 3.
 
-ABOUT                                                               *rel-about*
+ABOUT                                                              *rel-about*
 
 The inspiration for this script came from `UTL.vim`, which has similar goals,
 see http://www.vim.org/scripts/script.php?script_id=293
