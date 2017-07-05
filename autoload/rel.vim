@@ -58,6 +58,7 @@ fun! s:RunJob(cmd, arg) abort
 endfun
 
 fun! s:OpenManHelpOrFileAndGoto(a) abort " (_, filename, goto)
+  echom 's:OpenManHelpOrFileAndGoto ' . string(a:a)
   let l:filename = s:NormalizePath(a:a[1])
   let l:goto = a:a[2]
   if len(l:filename) > 0

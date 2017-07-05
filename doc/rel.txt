@@ -200,6 +200,11 @@ link by setting >
 <
 The default is a value of 3.
 
+                                                            *g:rel_link_chars*
+Link Characters ~
+
+TODO
+
 ABOUT                                                              *rel-about*
 
 The inspiration for this script came from `UTL.vim`, which has similar goals,
