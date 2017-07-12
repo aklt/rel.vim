@@ -71,13 +71,38 @@ elseif has('win32unix')
   let s:os = 'win32unix'
 endif
 
+" FIXME handle the 'vim' type, i.e. using xxd on a file
 let s:default_mime_programs = {
       \   'application': {
+      \     '*': {
+      \       'vim': 'xxd %s | head -n 32 | vim -'
+      \     },
+      \     'pdf': {
+      \       'unix': 'xpdf %s'
+      \     },
+      \     'msword': {
+      \       'unix': 'soffice %s'
+      \     },
+      \     'vnd.oasis.opendocument.text': {
+      \       'unix': 'soffice %s'
+      \     },
+      \     'postscript': {
+      \       'unix': 'evince %s'
+      \     },
       \     'vnd.ms-excel': {
       \       'unix': 'gnumeric %s'
       \     },
       \     'x-gnumeric': {
       \       'unix': 'gnumeric %s'
+      \     },
+      \     'zip': {
+      \       'unix': 'file-roller %s'
+      \     },
+      \     'x-gzip': {
+      \       'unix': 'file-roller %s'
+      \     },
+      \     'x-bzip2': {
+      \       'unix': 'file-roller %s'
       \     }
       \   },
       \   'audio': {
@@ -284,6 +309,7 @@ fun! s:OpenFileByMimeOrExt(a) abort
     endif
     let l:job = g:rel_extmap[l:ext]
   endif
+  echomsg 'Running ' . l:job
   return s:RunJob(l:job, s:NormalizePath(a:a[1]))
 endfun
 
