@@ -9,12 +9,12 @@ endfun
 let Test = rel#StunterTest()
 
 echomsg 's:NormalizePath'
-"call Test('s:NormalizePath', ['/tmp/foo'], '/tmp/foo')
-"call Test('s:NormalizePath', ['/tmp/foo'], '/tmp/foo')
-"call Test('s:NormalizePath', ['/tmp/%20foo'], '/tmp/\ foo')
-"call Test('s:NormalizePath', ['~/%26foo'], $HOME . '/&foo')
-"call Test('s:NormalizePath', ['$HOME/%26foo'], $HOME . '/&foo')
-"call Test('s:NormalizePath', ['/%26-$ENV_VALUE1/foo'], '/&-100/foo')
+call Test('s:NormalizePath', ['/tmp/foo'], '/tmp/foo')
+call Test('s:NormalizePath', ['/tmp/foo'], '/tmp/foo')
+call Test('s:NormalizePath', ['/tmp/%20foo'], '/tmp/\ foo')
+call Test('s:NormalizePath', ['~/%26foo'], $HOME . '/&foo')
+call Test('s:NormalizePath', ['$HOME/%26foo'], $HOME . '/&foo')
+call Test('s:NormalizePath', ['/%26-$ENV_VALUE1/foo'], '/&-100/foo')
 " FIXME Problem
 " call Test('s:NormalizePath', ['%24XX$ENV_VALUE1/foo'], '')
 
