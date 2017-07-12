@@ -104,7 +104,8 @@ let s:default_mime_programs = {
       \   },
       \   'inode': {
       \     'directory': {
-      \       'unix': 'rox %s'
+      \       'unix': 'rox %s',
+      \       'win32': 'explore %s'
       \     }
       \   },
       \   'video': {

@@ -9,12 +9,12 @@ endfun
 let Test = rel#StunterTest()
 
 echomsg 's:NormalizePath'
-call Test('s:NormalizePath', ['/tmp/foo'], '/tmp/foo')
-call Test('s:NormalizePath', ['/tmp/foo'], '/tmp/foo')
-call Test('s:NormalizePath', ['/tmp/%20foo'], '/tmp/\ foo')
-call Test('s:NormalizePath', ['~/%26foo'], $HOME . '/&foo')
-call Test('s:NormalizePath', ['$HOME/%26foo'], $HOME . '/&foo')
-call Test('s:NormalizePath', ['/%26-$ENV_VALUE1/foo'], '/&-100/foo')
+"call Test('s:NormalizePath', ['/tmp/foo'], '/tmp/foo')
+"call Test('s:NormalizePath', ['/tmp/foo'], '/tmp/foo')
+"call Test('s:NormalizePath', ['/tmp/%20foo'], '/tmp/\ foo')
+"call Test('s:NormalizePath', ['~/%26foo'], $HOME . '/&foo')
+"call Test('s:NormalizePath', ['$HOME/%26foo'], $HOME . '/&foo')
+"call Test('s:NormalizePath', ['/%26-$ENV_VALUE1/foo'], '/&-100/foo')
 " FIXME Problem
 " call Test('s:NormalizePath', ['%24XX$ENV_VALUE1/foo'], '')
 
@@ -59,14 +59,37 @@ if !has('nvim')
   call ExpectCursor('44:37')
 endif
 
-" Later
-if 0
-  echomsg 's:GetMimeType'
-  call Test('s:GetMimeType', ['/tmp'], 'inode/directory')
+echomsg 's:GetMimeType'
+call Test('s:GetMimeType', ['/tmp'], 'inode/directory')
 
-  echomsg 's:LookupMimeProgram'
-  call Test('s:LookupMimeProgram', ['inode/directory'], [0, ['rox %f']])
-  call Test('s:LookupMimeProgram', ['audio/x-wav'], [0, ['vlc %f']])
+echomsg 's:LookupMimeProgram'
+call Test('s:LookupMimeProgram', ['inode/directory'], [0, 'rox %s'])
+call Test('s:LookupMimeProgram', ['audio/x-wav'], [0, 'vlc %s'])
+call Test('s:LookupMimeProgram', ['whats/this'], [1, 'no mime head: whats'])
+
+echomsg 's:GetMimeProgramCmd'
+call Test('s:GetMimeProgramCmd', ['/tmp'], [0, 'rox %s'])
+call Test('s:GetMimeProgramCmd', ['stunter.vim'], [4, 'is text/plain'])
+
+echomsg 's:OpenFileByMimeOrExt'
+let g:rel_mime_programs = {
+      \ 'image': {
+      \   '*': {
+      \     'unix': 'echo -n open image %s'
+      \   },
+      \   'gif': {
+      \     'unix': 'echo -n open gif %s'
+      \   }
+      \ }
+      \ }
+source ../autoload/rel.vim
+call Test('s:OpenFileByMimeOrExt', [['/tmp', '/tmp']], '/tmp')
+call Test('s:OpenFileByMimeOrExt', [['nostunter.vim', 'stunter.vim']], 'nostunter.vim')
+" Return value for nvim differs
+if has('nvim')
+  call Test('s:OpenFileByMimeOrExt', [['noeat.gif', 'eat.gif']], 'open gif eat.gif')
+else
+  call Test('s:OpenFileByMimeOrExt', [['noeat.gif', 'eat.gif']], '')
 endif
 
 :qa
