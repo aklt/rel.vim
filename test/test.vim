@@ -8,7 +8,7 @@ endfun
 
 let Test = rel#StunterTest()
 
-echomsg 's:NormalizePath'
+" echomsg 's:NormalizePath'
 call Test('s:NormalizePath', ['/tmp/foo'], '/tmp/foo')
 call Test('s:NormalizePath', ['/tmp/foo'], '/tmp/foo')
 call Test('s:NormalizePath', ['/tmp/%20foo'], '/tmp/\ foo')
@@ -18,7 +18,7 @@ call Test('s:NormalizePath', ['/%26-$ENV_VALUE1/foo'], '/&-100/foo')
 " FIXME Problem
 " call Test('s:NormalizePath', ['%24XX$ENV_VALUE1/foo'], '')
 
-echomsg 's:TokenAtCursor'
+" echomsg 's:TokenAtCursor'
 call Test('s:TokenAtCursor', ['stunter.vim#:2', 0], 'stunter.vim#:2')
 call Test('s:TokenAtCursor', ['stunter.vim#:2', 1], 'stunter.vim#:2')
 call Test('s:TokenAtCursor', [' stunter.vim#:2', 0], '')
@@ -27,7 +27,7 @@ call Test('s:TokenAtCursor', ['<<<<stunter.vim#:2>>>>', 3], '')
 call Test('s:TokenAtCursor', ['<stunter.vim#:2>', 14], 'stunter.vim#:2')
 call Test('s:TokenAtCursor', ['<stunter.vim#:2>', 15], '')
 
-echomsg 'rel#Rel - various'
+" echomsg 'rel#Rel - various'
 let g:rel_open = 'edit'
 call Test('rel#Rel', ['stunter.vim#:4'], 0, 'getcurpos()[1:2] == [4,1]')
 call Test('rel#Rel', ['stunter.vim#:7:10'], 0, 'getcurpos()[1:2] == [7, 10]')
@@ -52,26 +52,26 @@ wincmd P
 call ExpectCursor('7:1')
 wincmd p
 
-echomsg 'rel#Rel - help:'
+" echomsg 'rel#Rel - help:'
 call Test('rel#Rel', ['help:variables#/when%20compiled'], 0)
 
 if !has('nvim')
   call ExpectCursor('44:37')
 endif
 
-echomsg 's:GetMimeType'
+" echomsg 's:GetMimeType'
 call Test('s:GetMimeType', ['/tmp'], 'inode/directory')
 
-echomsg 's:LookupMimeProgram'
+" echomsg 's:LookupMimeProgram'
 call Test('s:LookupMimeProgram', ['inode/directory'], [0, 'rox %s'])
 call Test('s:LookupMimeProgram', ['audio/x-wav'], [0, 'vlc %s'])
 call Test('s:LookupMimeProgram', ['whats/this'], [1, 'no mime head: whats'])
 
-echomsg 's:GetMimeProgramCmd'
+" echomsg 's:GetMimeProgramCmd'
 call Test('s:GetMimeProgramCmd', ['/tmp'], [0, 'rox %s'])
 call Test('s:GetMimeProgramCmd', ['stunter.vim'], [4, 'is text/plain'])
 
-echomsg 's:OpenFileByMimeOrExt'
+" echomsg 's:OpenFileByMimeOrExt'
 let g:rel_mime_programs = {
       \ 'image': {
       \   '*': {
@@ -89,8 +89,13 @@ call Test('s:OpenFileByMimeOrExt', [['nostunter.vim', 'stunter.vim']], 'nostunte
 if has('nvim')
   call Test('s:OpenFileByMimeOrExt', [['noeat.gif', 'eat.gif']], 'open gif eat.gif')
 else
-  call Test('s:OpenFileByMimeOrExt', [['noeat.gif', 'eat.gif']], '')
+  call Test('s:OpenFileByMimeOrExt', [['noeat.gif', 'eat.gif']], 0)
 endif
+
+let g:rel_use_mimetype = 0
+source ../autoload/rel.vim
+call Test('s:OpenFileByMimeOrExt', [['/tmp', '/tmp']], '/tmp')
+call Test('s:OpenFileByMimeOrExt', [['nostunter.vim', 'stunter.vim', 'vim']], 'nostunter.vim')
 
 :qa
 finish
