@@ -38,6 +38,10 @@ if ! exists('g:rel_http')
   let g:rel_http = 'firefox %s'
 endif
 
+if ! exists('g:rel_use_mimetype')
+  let g:rel_use_mimetype = 1
+endif
+
 fun! s:NormalizePath(path) abort
   let l:res = substitute(a:path, '^\~', $HOME, 'e')
   let l:res = expand(a:path)
@@ -57,7 +61,131 @@ fun! s:RunJob(cmd, arg) abort
         \ })
 endfun
 
+let s:os = 'unix'
+
+if has('macunix')
+  let s:os = 'macunix'
+elseif has('win32')
+  let s:os = 'win32'
+elseif has('win32unix')
+  let s:os = 'win32unix'
+endif
+
+" FIXME handle the 'vim' type, i.e. using xxd on a file
+let s:default_mime_programs = {
+      \   'application': {
+      \     '*': {
+      \       'vim': 'xxd %s | head -n 32 | vim -'
+      \     },
+      \     'pdf': {
+      \       'unix': 'xpdf %s'
+      \     },
+      \     'msword': {
+      \       'unix': 'soffice %s'
+      \     },
+      \     'vnd.oasis.opendocument.text': {
+      \       'unix': 'soffice %s'
+      \     },
+      \     'postscript': {
+      \       'unix': 'evince %s'
+      \     },
+      \     'vnd.ms-excel': {
+      \       'unix': 'gnumeric %s'
+      \     },
+      \     'x-gnumeric': {
+      \       'unix': 'gnumeric %s'
+      \     },
+      \     'zip': {
+      \       'unix': 'file-roller %s'
+      \     },
+      \     'x-gzip': {
+      \       'unix': 'file-roller %s'
+      \     },
+      \     'x-bzip2': {
+      \       'unix': 'file-roller %s'
+      \     }
+      \   },
+      \   'audio': {
+      \     '*': {
+      \       'unix': 'vlc %s',
+      \     },
+      \     'mpeg': {
+      \       'unix': 'clementine %s'
+      \     }
+      \   },
+      \   'image': {
+      \     '*': {
+      \       'unix':  'geeqie %s'
+      \     },
+      \     'gif': {
+      \       'unix': 'imv %s'
+      \     },
+      \     'x-xcf': {
+      \       'unix': 'gimp %s'
+      \     },
+      \     'svg+xml': {
+      \       'unix': 'inkscape %s'
+      \     }
+      \   },
+      \   'inode': {
+      \     'directory': {
+      \       'unix': 'rox %s',
+      \       'win32': 'explore %s'
+      \     }
+      \   },
+      \   'video': {
+      \     '*': {
+      \       'unix': 'vlc %s',
+      \       'win32': 'vlc %s'
+      \     }
+      \   }
+      \ }
+
+if exists('g:rel_mime_programs')
+  let s:mimePrograms = extend(s:default_mime_programs, g:rel_mime_programs)
+else
+  let s:mimePrograms = s:default_mime_programs
+endif
+
+fun! s:GetMimeType (filename) abort
+  let l:res = system('file --mime-type ' . a:filename)
+  if v:shell_error == 0
+    let l:mime = substitute(l:res, '^[^:]\+:\s*\|\n$', '', 'gm')
+    return l:mime
+  endif
+endfun
+
+fun! s:LookupMimeProgram (mimeType) abort
+  let l:key = split(a:mimeType, '/')
+  if ! has_key(s:mimePrograms, l:key[0])
+    return [1, 'no mime head: ' . l:key[0]]
+  endif
+  let l:it = s:mimePrograms[l:key[0]]
+  if ! has_key(l:it, l:key[1])
+    if ! has_key(l:it, '*')
+      return [2, 'no mime tail: ' . l:key[1] . ' or *']
+    endif
+    let l:it = l:it['*']
+  else
+    let l:it = l:it[l:key[1]]
+  endif
+  if ! has_key(l:it, s:os)
+    return [3, 'no OS (' . s:os . ') key for ' . a:mimeType]
+  endif
+  return [0, l:it[s:os]]
+endfun
+
+fun! s:GetMimeProgramCmd(filename) abort
+  let l:mime = s:GetMimeType(a:filename)
+  if l:mime == 'text/plain'
+    return [4, 'is text/plain']
+  endif
+  let l:cmd = s:LookupMimeProgram(l:mime)
+  return l:cmd
+endfun
+
 fun! s:OpenManHelpOrFileAndGoto(a) abort " (_, filename, goto)
+  " echom 's:OpenManHelpOrFileAndGoto ' . string(a:a)
   let l:filename = s:NormalizePath(a:a[1])
   let l:goto = a:a[2]
   if len(l:filename) > 0
@@ -163,13 +291,25 @@ fun! s:OpenHttp(a)abort
   return 1
 endfun
 
-fun! s:OpenFileExt(a) abort
-  let l:rel = a:a[1]
-  let l:ext = tolower(a:a[2])
-  if len(l:ext) == 0 || ! has_key(g:rel_extmap, l:ext)
+fun! s:OpenFileByMimeOrExt(a) abort
+  if !filereadable(a:a[1])
     return a:a[0]
   endif
-  let l:job = g:rel_extmap[l:ext]
+  if g:rel_use_mimetype
+    let l:cmd = s:GetMimeProgramCmd(a:a[1])
+    if l:cmd[0] != 0
+      return a:a[0]
+    else
+      let l:job = l:cmd[1]
+    endif
+  else
+    let l:ext = tolower(a:a[2])
+    if len(l:ext) == 0 || ! has_key(g:rel_extmap, l:ext)
+      return a:a[0]
+    endif
+    let l:job = g:rel_extmap[l:ext]
+  endif
+  echomsg 'Running ' . l:job
   return s:RunJob(l:job, s:NormalizePath(a:a[1]))
 endfun
 
@@ -218,7 +358,7 @@ let s:rel_handlers = [
       \  funcref('s:OpenResolvedScheme')],
       \ [ '\(\%(http\|ftp\)s\?:\/\/[' . g:rel_link_chars . ']\+\)',
       \  funcref('s:OpenHttp') ],
-      \ [ '^\(\S\+\.\(\w\+\)\)$', funcref('s:OpenFileExt') ],
+      \ [ '^\(\S\+\%(\.\(\w\+\)\)\?\)$', funcref('s:OpenFileByMimeOrExt') ],
       \ [ '^\%(file:\/\/\)\?\([^#]\+\)\%(#\(\%(\/\|:\)\S\+\)\)\?',
       \  funcref('s:OpenManHelpOrFileAndGoto')]
       \ ]
