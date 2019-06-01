@@ -26,6 +26,7 @@ call Test('s:TokenAtCursor', ['<<stunter.vim#:2>>', 3], 'stunter.vim#:2')
 call Test('s:TokenAtCursor', ['<<<<stunter.vim#:2>>>>', 3], '')
 call Test('s:TokenAtCursor', ['<stunter.vim#:2>', 14], 'stunter.vim#:2')
 call Test('s:TokenAtCursor', ['<stunter.vim#:2>', 15], '')
+call Test('s:TokenAtCursor', ['/A/B>></var/tmp/stunter.vim#/foo>', 15], '/var/tmp/stunter.vim#/foo')
 
 " echomsg 'rel#Rel - various'
 let g:rel_open = 'edit'
