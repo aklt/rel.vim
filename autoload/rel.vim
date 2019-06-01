@@ -177,7 +177,7 @@ endfun
 
 fun! s:GetMimeProgramCmd(filename) abort
   let l:mime = s:GetMimeType(a:filename)
-  if l:mime == 'text/plain'
+  if l:mime ==# 'text/plain'
     return [4, 'is text/plain']
   endif
   let l:cmd = s:LookupMimeProgram(l:mime)
@@ -379,7 +379,7 @@ fun! s:RelResolve(token) abort
   endfor
 endfun
 
-fun! s:MakeCharLookup(chars)
+fun! s:MakeCharLookup(chars) abort
   let l:res = []
   let l:len = strchars(a:chars)
   let l:i = 0
@@ -401,7 +401,7 @@ endfun
 
 let s:lookup = s:MakeCharLookup(g:rel_link_chars)
 
-fun! s:TokenAtCursor(line, cpos)
+fun! s:TokenAtCursor(line, cpos) abort
   let l:line = map(split(a:line, '\zs'), {i, c -> char2nr(c)})
   let l:last = len(a:line)
 
@@ -411,7 +411,7 @@ fun! s:TokenAtCursor(line, cpos)
   let l:eok = 1
 
   while l:bok || l:eok
-    if l:bok && l:b >= 0 && l:line[l:b] < 256 && s:lookup[l:line[l:b]] == '1'
+    if l:bok && l:b >= 0 && l:line[l:b] < 256 && s:lookup[l:line[l:b]] ==# '1'
       let l:b = l:b - 1
     else
       if l:bok && l:b >= 0
@@ -420,7 +420,7 @@ fun! s:TokenAtCursor(line, cpos)
       let l:bok = 0
     endif
 
-    if l:eok && l:e < l:last && l:line[l:e] < 256 && s:lookup[l:line[l:e]] == '1'
+    if l:eok && l:e < l:last && l:line[l:e] < 256 && s:lookup[l:line[l:e]] ==# '1'
       let l:e = l:e + 1
     else
       let l:eok = 0
