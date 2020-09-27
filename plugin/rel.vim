@@ -70,7 +70,7 @@ if ! hasmapto('<Plug>(Rel)')
 endif
 
 nnoremap <Plug>(Rel) :call rel#Rel()<CR>
-command! -nargs=* Rel call rel#Rel(<f-args>)
+command! -nargs=* -complete=tag Rel call rel#Rel(<f-args>)
 
 let &cpoptions= s:keepcpo
 unlet s:keepcpo
