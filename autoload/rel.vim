@@ -50,6 +50,7 @@ fun! s:NormalizePath(path) abort
 endfun
 
 fun! s:RunJob(cmd, arg) abort
+  " echomsg a:cmd . "(" . string(a:arg)
   let l:job = substitute(a:cmd, '%s', a:arg, 'g')
   if ! has('job')
     return system(l:job)
@@ -285,9 +286,13 @@ fun! s:OpenManHelpOrFileAndGoto(a) abort " (_, filename, goto)
   return a:a[0]
 endfun
 
-fun! s:OpenHttp(a)abort
+fun! s:OpenHttp(a) abort
   " echomsg 's:OpenHttp ' . string(a:a)
-  call s:RunJob(g:rel_http, a:a[1])
+  " No fragment inserted
+  if a:a[2] ==# '%f'
+    return s:RunJob(g:rel_http, a:a[1])
+  endif
+  call s:RunJob(g:rel_http, a:a[0])
   return 1
 endfun
 
@@ -354,9 +359,9 @@ fun! s:OpenResolvedScheme(a) abort
 endfun
 
 let s:rel_handlers = [
-      \ [ '^\(\w\+\):\([^#]*\)\%(#\(\%(\/\|:\)\S\+\)\)\?',
+      \ [ '^\(\w\+\):\([^#]*\)\%(#\(\S\+\)\)\?',
       \  funcref('s:OpenResolvedScheme')],
-      \ [ '\(\%(http\|ftp\)s\?:\/\/[' . g:rel_link_chars . ']\+\)',
+      \ [ '\(\%(http\|ftp\)s\?:\/\/[^#]*\)\%(#\(\S\+\)\)\?',
       \  funcref('s:OpenHttp') ],
       \ [ '^\(\S\+\%(\.\(\w\+\)\)\?\)$', funcref('s:OpenFileByMimeOrExt') ],
       \ [ '^\%(file:\/\/\)\?\([^#]\+\)\%(#\(\%(\/\|:\)\S\+\)\)\?',
