@@ -33,9 +33,8 @@ else
   let g:rel_extmap = s:default_extmap
 endif
 
-if ! exists('g:rel_highlight')
-  let g:rel_highlight = 3
-endif
+" TODO simpler URL highlight
+let g:rel_highlight = 2
 
 if ! exists('g:rel_schemes')
   let g:rel_schemes = {}
@@ -45,13 +44,13 @@ let g:rel_chars_not_ok = ' ,!\t()"<>' . "'"
 let g:rel_link_chars = '#$%&*+-./01234567899:=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ\\^_abcdefghijklmnopqrstuvwxyz~'
 
 if g:rel_highlight > 0
-  hi link xREL htmlLink
-  let s:match = ['\c\%(\%(^\|[' . g:rel_chars_not_ok . ']\)\zs\%(' .
-      \ join(add(add(keys(g:rel_schemes), 'man'), 'help'), '\|') .
+  hi! link xREL Underlined
+  let s:match = ['\%([^' . g:rel_chars_not_ok . ']*\zs\%(' .
+      \ join(extend(keys(g:rel_schemes), ['man', 'help', 'http', 'https', 'ftp', 'ftps']), '\|') .
       \ '\):[^' . g:rel_chars_not_ok . ']\+\)',
-      \ '\%([^' . g:rel_chars_not_ok . ']\+\.\%(' . join(keys(g:rel_extmap), '\|') . '\)\)',
-      \ '[^' . g:rel_chars_not_ok . ']\+#[\/:][^' . g:rel_chars_not_ok . ']\+',
-      \ '\%(http\|ftp\)s\?:\/\/[' . g:rel_link_chars . ']\+',
+      \ '\%([^' . g:rel_chars_not_ok . ']*\.\%(' . join(keys(g:rel_extmap), '\|') . '\)\)',
+      \ '[^' . g:rel_chars_not_ok . ']\+#\?[^' . g:rel_chars_not_ok . ']*',
+      \ '\%(http\|ftp\)s\?:\/\/\S\+',
       \ '\%(^\|[' . g:rel_chars_not_ok . ']\)\zs\%(\.\.\|\.\|\~\|\w\+\)\?\/\/\@!\f[^' .
       \ g:rel_chars_not_ok . ']*'
       \ ]
@@ -60,7 +59,7 @@ if g:rel_highlight > 0
   unlet s:match
   augroup REL
     au!
-    au BufWinEnter * call matchadd('xREL', g:rel_syn_match)
+    au BufWinEnter * call matchadd('xREL', g:rel_syn_match, 1000)
   augroup END
 endif
 
@@ -70,7 +69,7 @@ if ! hasmapto('<Plug>(Rel)')
 endif
 
 nnoremap <Plug>(Rel) :call rel#Rel()<CR>
-command! -nargs=* Rel call rel#Rel(<f-args>)
+command! -nargs=* -complete=tag Rel call rel#Rel(<f-args>)
 
 let &cpoptions= s:keepcpo
 unlet s:keepcpo
