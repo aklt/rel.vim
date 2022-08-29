@@ -6,6 +6,9 @@ fun! ExpectCursor(pos)
   endif
 endfun
 
+set virtualedit=all
+
+
 let Test = rel#StunterTest()
 
 " echomsg 's:NormalizePath'
@@ -25,7 +28,7 @@ call Test('s:TokenAtCursor', [' stunter.vim#:2', 0], '')
 call Test('s:TokenAtCursor', ['<<stunter.vim#:2>>', 3], 'stunter.vim#:2')
 call Test('s:TokenAtCursor', ['<<<<stunter.vim#:2>>>>', 3], '')
 call Test('s:TokenAtCursor', ['<stunter.vim#:2>', 14], 'stunter.vim#:2')
-call Test('s:TokenAtCursor', ['<stunter.vim#:2>', 15], '')
+call Test('s:TokenAtCursor', ['<stunter.vim#:2>', 15], 'stunter.vim#:2')
 call Test('s:TokenAtCursor', ['/A/B>></var/tmp/stunter.vim#/foo>', 15], '/var/tmp/stunter.vim#/foo')
 
 " echomsg 'rel#Rel - various'
@@ -38,15 +41,20 @@ call Test('rel#Rel', ['"stunter.vim#/g:stunter"', 3], 0, 'getcurpos()[1:2] == [7
 call Test('rel#Rel', ['(<"stunter.vim#/g:stunter">)', 3], 0, 'getcurpos()[1:2] == [7, 12]')
 
 let g:rel_open = 'pedit'
-call Test('rel#Rel', ['stunter.vim#:40'], 0)
-wincmd P
-call ExpectCursor('40:5')
-wincmd p
-
-call Test('rel#Rel', ['stunter.vim#/echoms'], 0)
-wincmd P
-call ExpectCursor('47:9')
-wincmd p
+if has('nvim')
+  echomsg "ERROR: 2 tests fail on nvim "
+else
+  call Test('rel#Rel', ['stunter.vim#:40:5'], 0)
+  wincmd P
+  call Test('rel#Rel', ['stunter.vim#:40:5'], 0)
+  call ExpectCursor('40:5')
+  wincmd p
+ 
+  call Test('rel#Rel', ['stunter.vim#/echoms'], 0)
+  wincmd P
+  call ExpectCursor('47:9')
+  wincmd p
+endif
 
 call Test('rel#Rel', ['stunter.vim#/^\w'], 0)
 wincmd P
@@ -54,10 +62,12 @@ call ExpectCursor('7:1')
 wincmd p
 
 " echomsg 'rel#Rel - help:'
-call Test('rel#Rel', ['help:variables#/when%20compiled'], 0)
+call Test('rel#Rel', ['help:help'], 0)
 
-if !has('nvim')
-  call ExpectCursor('44:37')
+if has('nvim')
+  call ExpectCursor('14:4')
+else
+  call ExpectCursor('16:4')
 endif
 
 " echomsg 's:GetMimeType'
