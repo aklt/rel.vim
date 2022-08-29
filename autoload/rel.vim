@@ -44,13 +44,16 @@ endif
 
 fun! s:NormalizePath(path) abort
   let l:res = substitute(a:path, '^\~', $HOME, 'e')
+  if l:res =~# '^\W\+$'
+    return ''
+  endif
   let l:res = expand(a:path)
   let l:res = substitute(l:res, '%\(\x\x\)', '\=nr2char("0x" . submatch(1))', 'g')
   return escape(l:res, ' ')
 endfun
 
 fun! s:RunJob(cmd, arg) abort
-  " echomsg a:cmd . "(" . string(a:arg)
+  " echomsg 'RunJob(' . a:cmd . ", " . string(a:arg)
   let l:job = substitute(a:cmd, '%s', a:arg, 'g')
   if ! has('job')
     return system(l:job)
@@ -186,7 +189,7 @@ fun! s:GetMimeProgramCmd(filename) abort
 endfun
 
 fun! s:OpenManHelpOrFileAndGoto(a) abort " (_, filename, goto)
-  " echom 's:OpenManHelpOrFileAndGoto ' . string(a:a)
+  " echomsg 's:OpenManHelpOrFileAndGoto (' . string(a:a)
   let l:filename = s:NormalizePath(a:a[1])
   let l:goto = a:a[2]
   if len(l:filename) > 0
@@ -410,7 +413,7 @@ fun! s:TokenAtCursor(line, cpos) abort
   let l:line = map(split(a:line, '\zs'), {i, c -> char2nr(c)})
   let l:last = len(a:line)
 
-  let l:b = a:cpos
+  let l:b = a:cpos - 1
   let l:e = a:cpos
   let l:bok = 1
   let l:eok = 1
