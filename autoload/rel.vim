@@ -462,7 +462,7 @@ fun! rel#StunterTest() abort
     return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_SID$')
   endfun
   runtime stunter.vim
-  return Stunter(s:SID())
+  return Stunter(s:SID(), 1)
 endfun
 
 let &cpoptions = s:save_cpo
