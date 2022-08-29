@@ -33,9 +33,8 @@ else
   let g:rel_extmap = s:default_extmap
 endif
 
-if ! exists('g:rel_highlight')
-  let g:rel_highlight = 2
-endif
+" TODO simpler URL highlight
+let g:rel_highlight = 2
 
 if ! exists('g:rel_schemes')
   let g:rel_schemes = {}
