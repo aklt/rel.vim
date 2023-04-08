@@ -36,6 +36,7 @@ endif
 
 if ! exists('g:rel_http')
   let g:rel_http = 'firefox %s'
+  " TODO let g:rel_http = [ 'firefox %s', 'chrome %s', 'chromium %s' ]
 endif
 
 if ! exists('g:rel_use_mimetype')
