@@ -59,7 +59,7 @@ if g:rel_highlight > 0
   unlet s:match
   augroup REL
     au!
-    au BufWinEnter * call matchadd('xREL', g:rel_syn_match, 1000)
+    au BufWinEnter * call matchadd('xREL', g:rel_syn_match, 1000) | hi link xREL htmlLink
   augroup END
 endif
 
